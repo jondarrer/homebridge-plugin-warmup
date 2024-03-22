@@ -1,0 +1,135 @@
+<div class="card card-body">
+  <form id="loginForm" class="invisible">
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input type="text" class="form-control" id="email" required />
+    </div>
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" class="form-control" id="password" required />
+    </div>
+    <div class="text-center">
+      <button id="loginButton" type="button" class="btn btn-primary">Login</button>
+    </div>
+  </form>
+  <form id="logoutForm" class="invisible">
+    <input type="hidden" class="form-control" id="token" readonly />
+    <div class="text-center">
+      <button id="logoutButton" type="button" class="btn btn-primary">Logout</button>
+    </div>
+  </form>
+  </div>
+  
+  <script>
+    (async () => {
+      // get the initial config - this is an array potentially containing multiple config blocks
+      const pluginConfig = await homebridge.getPluginConfig();
+  
+      // determine which form to show, either login or logout
+      if (pluginConfig.length && pluginConfig[0].token) {
+        document.querySelector('#token').value = pluginConfig[0].token;
+
+        if (document.getElementById('logoutForm').classList.contains('invisible')) {
+          document.getElementById('logoutForm').classList.remove('invisible');
+        }
+        if (!document.getElementById('loginForm').classList.contains('invisible')) {
+          document.getElementById('loginForm').classList.add('invisible');
+        }
+      } else {
+        pluginConfig.push({});
+
+        if (document.getElementById('loginForm').classList.contains('invisible')) {
+          document.getElementById('loginForm').classList.remove('invisible');
+        }
+      }
+  
+      // watch for click events on the loginButton
+      document.querySelector('#loginButton').addEventListener('click', async () => {
+        // validate a username was provided
+        const email = document.querySelector('#email').value;
+        const password = document.querySelector('#password').value;
+  
+        if (!email) {
+            // create a error / red toast notification if the required input is not provided.
+            homebridge.toast.error('Email must be provided.', 'Error');
+            return;
+        }
+        
+        if (!password) {
+            // create a error / red toast notification if the required input is not provided.
+            homebridge.toast.error('Password must be provided.', 'Error');
+            return;
+        }
+  
+        // starting the request, show the loading spinner
+        homebridge.showSpinner();
+  
+        // request a token from the server
+        try {
+          const response = await homebridge.request('/token', {
+            email,
+            password
+          });
+  
+          // update the token input with the response
+          document.querySelector('#token').value = response.token;
+  
+          // update the plugin config
+          pluginConfig[0].token = response.token;
+          homebridge.updatePluginConfig(pluginConfig);
+      
+          if (document.getElementById('logoutForm').classList.contains('invisible')) {
+            document.getElementById('logoutForm').classList.remove('invisible');
+          }
+          if (!document.getElementById('loginForm').classList.contains('invisible')) {
+            document.getElementById('loginForm').classList.add('invisible');
+          }
+  
+          // show a success toast notification
+          homebridge.toast.success('Logged in', 'Success');
+        } catch (e) {
+          homebridge.toast.error(e.error, e.message);
+        } finally {
+          // remember to hide the spinner
+          homebridge.hideSpinner();
+        }
+      });
+ 
+  
+      // watch for click events on the logoutButton
+      document.querySelector('#logoutButton').addEventListener('click', async () => {
+  
+        // starting the request, show the loading spinner
+        homebridge.showSpinner();
+  
+        // request a token from the server
+        try {
+          const response = await homebridge.request('/logout');
+  
+          // update the token input with the response
+          document.querySelector('#token').value = null;
+  
+          // update the plugin config
+          pluginConfig[0].token = null;
+          homebridge.updatePluginConfig(pluginConfig);
+      
+          if (document.getElementById('loginForm').classList.contains('invisible')) {
+            document.getElementById('loginForm').classList.remove('invisible');
+          }
+          if (!document.getElementById('logoutForm').classList.contains('invisible')) {
+            document.getElementById('logoutForm').classList.add('invisible');
+          }
+  
+          // show a success toast notification
+          homebridge.toast.success('Logged out', 'Success');
+        } catch (e) {
+          homebridge.toast.error(e.error, e.message);
+        } finally {
+          // remember to hide the spinner
+          homebridge.hideSpinner();
+        }
+      });
+  
+    })();
+  
+  </script>
