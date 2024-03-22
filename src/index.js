@@ -1,5 +1,5 @@
-import { PLATFORM_NAME } from './settings';
-import { WarmupHomebridgePlatform } from './warmup-homebridge-platform';
+import { PLATFORM_NAME } from './settings.js';
+import { WarmupHomebridgePlatform } from './warmup-homebridge-platform.js';
 
 /**
  * This method registers the platform with Homebridge

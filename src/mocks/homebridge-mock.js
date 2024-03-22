@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 
-import { CharacteristicMock } from './characteristic-mock';
-import { ServiceMock } from './service-mock';
+import { CharacteristicMock } from './characteristic-mock.js';
+import { ServiceMock } from './service-mock.js';
 
 export class HomebridgeMock {
   set;

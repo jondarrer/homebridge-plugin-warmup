@@ -1,10 +1,10 @@
 import { jest } from '@jest/globals';
-import { WarmupService } from './services';
 
-import { HomebridgeMock, createLoggingMock } from './mocks';
+import { HomebridgeMock, createLoggingMock } from './mocks/index.js';
 
-import { WarmupHomebridgePlatform } from './warmup-homebridge-platform';
-import { PLUGIN_NAME, PLATFORM_NAME } from './settings';
+import { PLUGIN_NAME, PLATFORM_NAME } from './settings.js';
+import { WarmupService } from './services/index.js';
+import { WarmupHomebridgePlatform } from './warmup-homebridge-platform.js';
 
 let log;
 let config;

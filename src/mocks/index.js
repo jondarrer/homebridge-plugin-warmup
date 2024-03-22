@@ -1,5 +1,5 @@
-import { CharacteristicMock } from './characteristic-mock';
-import { HomebridgeMock } from './homebridge-mock';
-import createLoggingMock from './logging';
+import { CharacteristicMock } from './characteristic-mock.js';
+import { HomebridgeMock } from './homebridge-mock.js';
+import createLoggingMock from './logging.js';
 
 export { CharacteristicMock, HomebridgeMock, createLoggingMock };

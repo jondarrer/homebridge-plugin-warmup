@@ -1,4 +1,4 @@
-import { RunMode } from './enums';
+import { RunMode } from './enums.js';
 
 /**
  * Platform Accessory

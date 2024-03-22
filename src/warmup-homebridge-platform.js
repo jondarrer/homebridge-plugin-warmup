@@ -1,6 +1,6 @@
-import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
-import { WarmupPlatformAccessory } from './warmup-platform-accessory';
-import { WarmupService } from './services';
+import { PLATFORM_NAME, PLUGIN_NAME } from './settings.js';
+import { WarmupPlatformAccessory } from './warmup-platform-accessory.js';
+import { WarmupService } from './services/index.js';
 
 /**
  * HomebridgePlatform
