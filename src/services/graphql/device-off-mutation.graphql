@@ -1,0 +1,4 @@
+deviceOff(
+  lid: $locationId
+  rid: $roomId
+)

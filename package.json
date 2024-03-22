@@ -21,13 +21,13 @@
   "module": "src/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "lint": "eslint src/**.ts --max-warnings=0",
-    "watch": "npm run build && npm link && nodemon",
-    "copy-files": "copyfiles -u 1 src/**/*.html dist/",
     "build": "rimraf ./dist && npm run copy-files",
+    "copy-files": "copyfiles -u 1 src/**/*.html dist/",
+    "lint": "eslint src/**.ts --max-warnings=0",
+    "prepare": "husky",
     "prepublishOnly": "npm run lint && npm run build",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "test-with-coverage": "node --experimental-vm-modules --collect-coverage node_modules/jest/bin/jest.js"
+    "watch": "npm run build && npm link && nodemon"
   },
   "keywords": [
     "homebridge-plugin"

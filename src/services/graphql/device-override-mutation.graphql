@@ -1,0 +1,6 @@
+deviceOverride(
+  lid: $locationId
+  rid: $roomId
+  temperature: $temperature
+  minutes: $minutes
+)
