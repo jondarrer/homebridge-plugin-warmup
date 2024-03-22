@@ -1,3 +1,3 @@
-import { WarmupService } from './warmup-service';
+import { WarmupService } from './warmup-service.js';
 
 export { WarmupService };

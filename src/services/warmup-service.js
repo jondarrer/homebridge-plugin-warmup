@@ -2,7 +2,7 @@ import assert from 'assert';
 
 import { getToken, makeGQLQuery } from 'warmup-api';
 
-import { getDevicesQuery } from './graphql';
+import { getDevicesQuery } from './graphql/index.js';
 
 /**
  * Communicates with the Warmup API
