@@ -1,5 +1,3 @@
-import assert from 'assert';
-
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings';
 import { WarmupPlatformAccessory } from './warmup-platform-accessory';
 import { WarmupService } from './services';
@@ -50,8 +48,6 @@ export class WarmupHomebridgePlatform {
     this.Service = this.api.hap.Service;
     this.Characteristic = this.api.hap.Characteristic;
     this.Categories = this.api.hap.Categories;
-
-    // assert(this.config.token, 'Not logged in');
 
     this.warmupService = new WarmupService(this.config.token);
     this.log.debug('Finished initializing platform:', this.config.name);

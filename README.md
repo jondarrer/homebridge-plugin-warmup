@@ -1,18 +1,18 @@
-<pre>
+# Warmup Homebridge Plugin <!-- omit in toc -->
+
+<pre><!-- markdownlint-disable-line MD033 -->
 *###.   :###    -###################################################################:
-.###=   *###=   *##=                                                                 
- +##*  .#####  .### .+*####*=   :+####* =*######+:+#####=   =###   :##*  -*#####*=   
- .###. =##+##- =##+  :    :###  =###    ###*   *###   +###. +###   :###  +##+  .###+ 
+.###=   *###=   *##=
+ +##*  .#####  .### .+*####*=   :+####* =*######+:+#####=   =###   :##*  -*#####*=
+ .###. =##+##- =##+  :    :###  =###    ###*   *###   +###. +###   :###  +##+  .###+
   +##= ##=.##+ ###.    .-=+###: =###    ###*   -###   :###: +###   :###  +##+   .###:
   :###+##  +##+##*  +###.  ###: =###    ###*   -###   :###: +###   :###  +##+    ###-
-   #####-   #####. :###    ###: =###    ###*   -###   :###: +###   :###  +##+   -### 
+   #####-   #####. :###    ###: =###    ###*   -###   :###: +###   :###  +##+   -###
    -####    =###*   ####:.:###: =###    ###*   -###   :###:  ####**####  +###==*###  
-    ---:     ---.     :=++==-   .---    ---:   .---    ---    .-=++==:   +###===-    
-                                                                         +##+        
+    ---:     ---.     :=++==-   .---    ---:   .---    ---    .-=++==:   +###===-
+                                                                         +##+
                                                                          +##+    ..  
 </pre>
-
-# Warmup Homebridge Plugin <!-- omit in toc -->
 
 ## Introduction <!-- omit in toc -->
 
@@ -41,7 +41,7 @@ You will also need a server running [Homebridge](https://homebridge.io).
 Install the plugin by searching for "Warmup Homebridge Plugin" through the Homebridge Plugins UI or manually by:
 
 ```sh
-$ sudo npm -g i homebridge-plugin-warmup
+sudo npm -g i homebridge-plugin-warmup
 ```
 
 Use the plugin Config UI X to login to your account and all the thermostats you own will be added to Homebridge.
@@ -51,6 +51,8 @@ Use the plugin Config UI X to login to your account and all the thermostats you 
 Changes to the temperature create a temperature override for the current setting.  Length of the override defaults to 60 Minutes ( or the duration setting).  
 
 ## Mode Setting
+
+Any temperature change will cause a 60 minute override at that temperature. However, you can also adjust mode:
 
 | Setting | Effect                                                  |
 | ------- | ------------------------------------------------------- |

@@ -17,7 +17,7 @@
   "scripts": {
     "build": "rimraf ./dist && npm run copy-files",
     "copy-files": "copyfiles -u 1 src/**/*.html dist/",
-    "lint": "eslint src/**.ts --max-warnings=0",
+    "lint": "eslint src/**.js --max-warnings=0",
     "lint-staged": "lint-staged",
     "prepare": "husky",
     "prepublishOnly": "npm run lint && npm run build",
