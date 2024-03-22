@@ -6,7 +6,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jondarrer/my-first-homebridge-plugin.git"
+    "url": "git+https://github.com/jondarrer/my-first-homebridge-plugin.git"
   },
   "bugs": {
     "url": "https://github.com/jondarrer/my-first-homebridge-plugin/issues"
