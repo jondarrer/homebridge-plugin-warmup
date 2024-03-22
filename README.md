@@ -1,4 +1,12 @@
-<pre style="color: #f55; background-color: transparent;">
+<style>
+  .ascii-logo {
+    color: #f55;
+    background-color: transparent;
+    display: inline-block;
+  }
+</style>
+
+<pre class="ascii-logo">
 *###.   :###    -###################################################################:
 .###=   *###=   *##=                                                                 
  +##*  .#####  .### .+*####*=   :+####* =*######+:+#####=   =###   :##*  -*#####*=   
@@ -52,9 +60,11 @@ Changes to the temperature create a temperature override for the current setting
 
 ## Mode Setting
 
-`Off` - Turns off the thermostat
-`Heat` - Overrides the current target temperature for 60 minutes
-`Auto` - Resumes the current program's schedule and temperature
+| Setting | Effect                                                  |
+| ------- | ------------------------------------------------------- |
+| `Off`   | Turns off the thermostat                                |
+| `Heat`  | Overrides the current target temperature for 60 minutes |
+| `Auto`  | Resumes the current program's schedule and temperature  |
 
 ## Developing
 
