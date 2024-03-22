@@ -26,7 +26,7 @@
   },
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "warmup-api": "^0.0.6"
+    "warmup-api": "^0.0.8"
   },
   "devDependencies": {
     "@homebridge/plugin-ui-utils": "^1.0.1",
@@ -52,7 +52,7 @@
   ],
   "engines": {
     "homebridge": "^1.6.0",
-    "node": "^18.17.0 || ^20.9.0"
+    "node": "^18.19.0 || ^20.9.0"
   },
   "displayName": "Warmup Homebridge Plugin",
   "lint-staged": {
