@@ -1,6 +1,5 @@
 {
   "private": true,
-  "displayName": "Warmup Homebridge Plugin",
   "name": "homebridge-plugin-warmup",
   "version": "1.0.0",
   "description": "My very first Homebridge plugin to help me learn about Homebridge plugins",
@@ -12,26 +11,22 @@
   "bugs": {
     "url": "https://github.com/jondarrer/my-first-homebridge-plugin/issues"
   },
-  "engines": {
-    "node": "^18.17.0 || ^20.9.0",
-    "homebridge": "^1.6.0"
-  },
   "type": "module",
   "main": "dist/index.js",
   "module": "src/index.js",
-  "types": "./dist/index.d.ts",
   "scripts": {
     "build": "rimraf ./dist && npm run copy-files",
     "copy-files": "copyfiles -u 1 src/**/*.html dist/",
-    "lint": "eslint src/**.ts --max-warnings=0",
+    "lint-staged": "lint-staged",
     "prepare": "husky",
     "prepublishOnly": "npm run lint && npm run build",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "watch": "npm run build && npm link && nodemon"
   },
-  "keywords": [
-    "homebridge-plugin"
-  ],
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "warmup-api": "^0.0.6"
+  },
   "devDependencies": {
     "@homebridge/plugin-ui-utils": "^1.0.1",
     "@types/jest": "^29.5.12",
@@ -46,12 +41,28 @@
     "lcov-badge2": "^1.1.2",
     "lint-staged": "^15.2.2",
     "nodemon": "^2.0.22",
-    "rimraf": "^3.0.2",
     "prettier": "^3.2.5",
     "prettier-package-json": "^2.8.0",
+    "rimraf": "^3.0.2",
     "typescript": "^5.3.3"
   },
-  "dependencies": {
-    "warmup-api": "^0.0.6"
+  "keywords": [
+    "homebridge-plugin"
+  ],
+  "engines": {
+    "homebridge": "^1.6.0",
+    "node": "^18.17.0 || ^20.9.0"
+  },
+  "displayName": "Warmup Homebridge Plugin",
+  "lint-staged": {
+    "**/package.json": [
+      "prettier-package-json --write",
+      "git add"
+    ],
+    "src/**/*.js": [
+      "eslint --fix --quiet",
+      "prettier --single-quote --trailing-comma es5 --write",
+      "git add"
+    ]
   }
 }
