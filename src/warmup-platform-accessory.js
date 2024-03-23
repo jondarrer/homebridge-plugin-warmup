@@ -66,7 +66,13 @@ export class WarmupPlatformAccessory {
 
     // each service must implement at-minimum the "required characteristics" for the given service type
     // see https://developers.homebridge.io/#/service/Thermostat
-    this.service.getCharacteristic(CurrentHeatingCoolingState).onGet(this.getCurrentHeatingCoolingState.bind(this));
+    this.service
+      .getCharacteristic(CurrentHeatingCoolingState)
+      .onGet(this.getCurrentHeatingCoolingState.bind(this))
+      .setProps({
+        minValue: -10,
+        maxValue: 50,
+      });
 
     this.service
       .getCharacteristic(TargetHeatingCoolingState)
