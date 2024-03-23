@@ -1,6 +1,3 @@
-deviceOverride(
-  lid: $locationId
-  rid: $roomId
-  temperature: $temperature
-  minutes: $minutes
-)
+mutation deviceOverride($locationId: Int!, $roomId: Int, $temperature: Int!, $minutes: Int!) {
+  deviceOverride(lid: $locationId, rid: $roomId, temperature: $temperature, minutes: $minutes)
+}

@@ -1,25 +1,27 @@
-user {
-  owned {
-    room (id: $roomId) {
-      id
-      type
-      roomName
-      comfortTemp
-      currentTemp
-      mainTemp
-      mainLabel
-      secondaryTemp
-      secondaryLabel
-      sleepTemp
-      overrideDur
-      overrideTemp
-      fixedTemp
-      awayTemp
-      targetTemp
-      runMode
-      runModeInt
-      roomMode
-      roomModeInt
+query getDevice {
+  user {
+    owned {
+      room(id: $roomId) {
+        id
+        type
+        roomName
+        comfortTemp
+        currentTemp
+        mainTemp
+        mainLabel
+        secondaryTemp
+        secondaryLabel
+        sleepTemp
+        overrideDur
+        overrideTemp
+        fixedTemp
+        awayTemp
+        targetTemp
+        runMode
+        runModeInt
+        roomMode
+        roomModeInt
+      }
     }
   }
 }

@@ -29,6 +29,8 @@ export class HomebridgeMock {
 
   unregisterPlatformAccessories = jest.fn();
 
+  updatePlatformAccessories = jest.fn();
+
   hap = {
     Characteristic: CharacteristicMock,
     Service: ServiceMock,

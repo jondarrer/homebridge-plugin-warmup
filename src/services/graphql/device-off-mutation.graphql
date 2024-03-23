@@ -1,4 +1,3 @@
-deviceOff(
-  lid: $locationId
-  rid: $roomId
-)
+mutation deviceOff($locationId: Int!, $roomId: Int) {
+  deviceOff(lid: $locationId, rid: $roomId)
+}

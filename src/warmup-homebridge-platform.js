@@ -81,18 +81,31 @@ export class WarmupHomebridgePlatform {
    * are not registered again to prevent "duplicate UUID" errors.
    */
   discoverDevices = async () => {
-    const { user } = await this.warmupService.getDevices();
+    const {
+      data: {
+        user,
+        user: { id: userId },
+      },
+    } = await this.warmupService.getDevices();
+
+    this.log.debug(`Discovered devices for user ${userId}.`);
 
     // Loop over the owned locations
     for (const location of user.owned) {
       const { id: locationId } = location;
+
+      this.log.debug(`Processing devices for location ${locationId}.`);
 
       // loop over the discovered devices and register each one if it has not already been registered
       for (const device of location.rooms) {
         // generate a unique id for the accessory this should be generated from
         // something globally unique, but constant, for example, the device serial
         // number or MAC address
+        // If the deviceSN doesn't exist, make something up
+        device.deviceSN = device.deviceSN || `${userId}-${locationId}-${device.id}`;
         const uuid = this.api.hap.uuid.generate(device.deviceSN);
+
+        this.log.debug(`Processing device ${device.roomName} with serial number ${device.deviceSN}.`);
 
         // see if an accessory with the same uuid has already been registered and restored from
         // the cached devices we stored in the `configureAccessory` method above
@@ -102,9 +115,9 @@ export class WarmupHomebridgePlatform {
           // the accessory already exists
           this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
 
-          // if you need to update the accessory.context then you should run `api.updatePlatformAccessories`. eg.:
-          // existingAccessory.context.device = device;
-          // this.api.updatePlatformAccessories([existingAccessory]);
+          existingAccessory.context = { locationId };
+          existingAccessory.context.device = device;
+          this.api.updatePlatformAccessories([existingAccessory]);
 
           // create the accessory handler for the restored accessory
           // this is imported from `platformAccessory.ts`
@@ -137,7 +150,7 @@ export class WarmupHomebridgePlatform {
       user.owned.forEach((location) => {
         if (!location.rooms.find((device) => device.deviceSN === existingAccessory.context.device.deviceSN)) {
           // the accessory no longer exists
-          this.log.info('Removing existing accessory from cache:', existingAccessory.displayName);
+          this.log.info('Removing unavailable accessory from the cache:', existingAccessory.displayName);
 
           // remove platform accessories that are no longer present
           this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [existingAccessory]);
