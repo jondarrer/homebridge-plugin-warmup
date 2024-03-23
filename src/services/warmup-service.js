@@ -60,15 +60,16 @@ export class WarmupService {
 
   /**
    * Gets the device belonging to the user
+   * @param {number} locationId The room id of the device
    * @param {number} roomId The room id of the device
    * @returns {Promise<any>}
    */
-  async getDevice(roomId) {
+  async getDevice(locationId, roomId) {
     assert(this.token, 'Login before getting a device');
     const query = {
       operationName: 'getDevices',
       query: getDevicesQuery,
-      variables: { roomId },
+      variables: { locationId, roomId },
     };
 
     return await makeGQLQuery(query, this.token);
@@ -77,7 +78,7 @@ export class WarmupService {
   /**
    *
    * @param {{locationId: number, roomId: [number], temperature: number, minutes: number}} params
-   * @returns {Promise<boolean>}
+   * @returns {Promise<any>}
    */
   async deviceOverride({ locationId, roomId, temperature, minutes }) {
     assert(this.token, 'Login before overriding a device');
@@ -93,7 +94,7 @@ export class WarmupService {
   /**
    *
    * @param {{locationId: number, roomId: [number] }} params
-   * @returns {Promise<boolean>}
+   * @returns {Promise<any>}
    */
   async deviceOverrideCancel({ locationId, roomId }) {
     assert(this.token, 'Login before cancelling an override for a device');

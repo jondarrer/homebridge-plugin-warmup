@@ -10,80 +10,69 @@ let log;
 let config;
 let api;
 
-const LOCATION_ID = 123;
+const USER_ID = 123;
+const LOCATION_ID = 123123;
 
 const BATHROOM_DEVICE = {
   id: 123456,
-  locationId: LOCATION_ID,
-  deviceSN: 'D5CF07A1B0C2',
-  isActive: true,
-  runMode: 'override',
-  roomSettings: {
-    mode: 'program',
-    name: 'Bathroom',
-    preset: 'bathroom',
-    overrideDur: 60,
-    overrideTemp: 100,
-    fixedTemp: 160,
-    awayTemp: 100,
-    targetTemp: 100,
-  },
-  airTemp: 200,
-  floor1Temp: 255,
-  floor2Temp: 0,
-  comfortTemp: 140,
   type: '4ie',
-  heatingTarget: 'floor',
-  isFaultAir: false,
-  isFaultFloor1: false,
-  isFaultFloor2: true,
-  minTemp: 50,
-  maxTemp: 300,
-  currentTemp: 140,
+  roomName: 'Bathroom',
+  comfortTemp: 140,
+  currentTemp: 255,
+  mainTemp: 255,
+  mainLabel: 'floor',
+  secondaryTemp: 200,
+  secondaryLabel: 'air',
+  sleepTemp: 100,
+  overrideDur: 60,
+  overrideTemp: 100,
+  fixedTemp: 160,
+  awayTemp: 100,
+  targetTemp: 100,
+  runMode: 'override',
+  runModeInt: 2,
+  roomMode: 'program',
+  roomModeInt: 1,
 };
 
 const BATHROOM_ACCESSORY = {
-  UUID: 'UUID:D5CF07A1B0C2',
+  UUID: `UUID:${USER_ID}-${LOCATION_ID}-${BATHROOM_DEVICE.id}`,
   displayName: 'BATHROOM_ACCESSORY',
   context: {
+    userId: USER_ID,
+    locationId: LOCATION_ID,
     device: BATHROOM_DEVICE,
   },
 };
 
 const KITCHEN_DEVICE = {
   id: 123457,
-  locationId: LOCATION_ID,
-  deviceSN: 'D5CF07A1B0C3',
-  isActive: true,
-  runMode: 'schedule',
-  roomSettings: {
-    mode: 'program',
-    name: 'Kitchen',
-    preset: 'kitchen',
-    overrideDur: 0,
-    overrideTemp: 200,
-    fixedTemp: 0,
-    awayTemp: 120,
-    targetTemp: 120,
-  },
-  airTemp: 195,
-  floor1Temp: 190,
-  floor2Temp: 0,
-  comfortTemp: 120,
   type: '4ie',
-  heatingTarget: 'floor',
-  isFaultAir: false,
-  isFaultFloor1: false,
-  isFaultFloor2: true,
-  minTemp: 50,
-  maxTemp: 300,
-  currentTemp: 190,
+  roomName: 'Kitchen',
+  comfortTemp: 200,
+  currentTemp: 210,
+  mainTemp: 210,
+  mainLabel: 'floor',
+  secondaryTemp: 175,
+  secondaryLabel: 'air',
+  sleepTemp: 120,
+  overrideDur: 0,
+  overrideTemp: 200,
+  fixedTemp: 0,
+  awayTemp: 120,
+  targetTemp: 200,
+  runMode: 'schedule',
+  runModeInt: 1,
+  roomMode: 'program',
+  roomModeInt: 1,
 };
 
 const KITCHEN_ACCESSORY = {
-  UUID: 'UUID:D5CF07A1B0C3',
+  UUID: `UUID:${USER_ID}-${LOCATION_ID}-${KITCHEN_DEVICE.id}`,
   displayName: 'KITCHEN_ACCESSORY',
   context: {
+    userId: USER_ID,
+    locationId: LOCATION_ID,
     device: KITCHEN_DEVICE,
   },
 };
@@ -108,7 +97,7 @@ describe('WarmupHomebridgePlatform', () => {
     // Arrange
     new WarmupHomebridgePlatform(log, config, api);
     jest.spyOn(WarmupService.prototype, 'getDevices').mockResolvedValue({
-      data: { user: { owned: [{ id: LOCATION_ID, rooms: [BATHROOM_DEVICE, KITCHEN_DEVICE] }] } },
+      data: { user: { id: USER_ID, owned: [{ id: LOCATION_ID, rooms: [BATHROOM_DEVICE, KITCHEN_DEVICE] }] } },
     });
 
     // Act
@@ -122,8 +111,10 @@ describe('WarmupHomebridgePlatform', () => {
       expect.arrayContaining([
         expect.objectContaining({
           context: expect.objectContaining({
+            userId: USER_ID,
+            locationId: LOCATION_ID,
             device: expect.objectContaining({
-              deviceSN: BATHROOM_DEVICE.deviceSN,
+              id: BATHROOM_DEVICE.id,
             }),
           }),
         }),
@@ -135,8 +126,10 @@ describe('WarmupHomebridgePlatform', () => {
       expect.arrayContaining([
         expect.objectContaining({
           context: expect.objectContaining({
+            userId: USER_ID,
+            locationId: LOCATION_ID,
             device: expect.objectContaining({
-              deviceSN: KITCHEN_DEVICE.deviceSN,
+              id: KITCHEN_DEVICE.id,
             }),
           }),
         }),
@@ -148,9 +141,12 @@ describe('WarmupHomebridgePlatform', () => {
     // Arrange
     const plugin = new WarmupHomebridgePlatform(log, config, api);
     jest.spyOn(WarmupService.prototype, 'getDevices').mockResolvedValue({
-      data: { user: { owned: [{ id: LOCATION_ID, rooms: [BATHROOM_DEVICE, KITCHEN_DEVICE] }] } },
+      data: { user: { id: USER_ID, owned: [{ id: LOCATION_ID, rooms: [BATHROOM_DEVICE, KITCHEN_DEVICE] }] } },
     });
-    plugin.configureAccessory(api.platformAccessory(BATHROOM_ACCESSORY));
+    const accessory = api.platformAccessory(BATHROOM_ACCESSORY);
+    accessory.context.userId = USER_ID;
+    accessory.context.locationId = LOCATION_ID;
+    plugin.configureAccessory(accessory);
 
     // Act
     await api.emit('didFinishLaunching');
@@ -163,8 +159,10 @@ describe('WarmupHomebridgePlatform', () => {
       expect.arrayContaining([
         expect.objectContaining({
           context: expect.objectContaining({
+            userId: USER_ID,
+            locationId: LOCATION_ID,
             device: expect.objectContaining({
-              deviceSN: KITCHEN_DEVICE.deviceSN,
+              id: KITCHEN_DEVICE.id,
             }),
           }),
         }),
@@ -175,9 +173,9 @@ describe('WarmupHomebridgePlatform', () => {
   it('should unregister unused accessories', async () => {
     // Arrange
     const plugin = new WarmupHomebridgePlatform(log, config, api);
-    jest
-      .spyOn(WarmupService.prototype, 'getDevices')
-      .mockResolvedValue({ data: { user: { owned: [{ id: LOCATION_ID, rooms: [KITCHEN_DEVICE] }] } } });
+    jest.spyOn(WarmupService.prototype, 'getDevices').mockResolvedValue({
+      data: { user: { id: USER_ID, owned: [{ id: LOCATION_ID, rooms: [KITCHEN_DEVICE] }] } },
+    });
     plugin.configureAccessory(api.platformAccessory(BATHROOM_ACCESSORY));
 
     // Act
@@ -191,8 +189,10 @@ describe('WarmupHomebridgePlatform', () => {
       expect.arrayContaining([
         expect.objectContaining({
           context: expect.objectContaining({
+            userId: USER_ID,
+            locationId: LOCATION_ID,
             device: expect.objectContaining({
-              deviceSN: BATHROOM_DEVICE.deviceSN,
+              id: BATHROOM_DEVICE.id,
             }),
           }),
         }),

@@ -101,11 +101,10 @@ export class WarmupHomebridgePlatform {
         // generate a unique id for the accessory this should be generated from
         // something globally unique, but constant, for example, the device serial
         // number or MAC address
-        // If the deviceSN doesn't exist, make something up
-        device.deviceSN = device.deviceSN || `${userId}-${locationId}-${device.id}`;
-        const uuid = this.api.hap.uuid.generate(device.deviceSN);
+        const deviceSN = WarmupPlatformAccessory.buildSerialNumber(userId, locationId, device.id);
+        const uuid = this.api.hap.uuid.generate(deviceSN);
 
-        this.log.debug(`Processing device ${device.roomName} with serial number ${device.deviceSN}.`);
+        this.log.debug(`Processing device ${device.roomName} with serial number ${deviceSN}.`);
 
         // see if an accessory with the same uuid has already been registered and restored from
         // the cached devices we stored in the `configureAccessory` method above
@@ -115,7 +114,7 @@ export class WarmupHomebridgePlatform {
           // the accessory already exists
           this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
 
-          existingAccessory.context = { locationId };
+          existingAccessory.context = { userId, locationId };
           existingAccessory.context.device = device;
           this.api.updatePlatformAccessories([existingAccessory]);
 
@@ -131,7 +130,7 @@ export class WarmupHomebridgePlatform {
 
           // store a copy of the device object in the `accessory.context`
           // the `context` property can be used to store any data about the accessory you may need
-          accessory.context = { locationId };
+          accessory.context = { userId, locationId };
           accessory.context.device = device;
 
           // create the accessory handler for the newly create accessory
@@ -148,7 +147,18 @@ export class WarmupHomebridgePlatform {
     for (let i = 0; i < this.accessories.length; i++) {
       const existingAccessory = this.accessories[i];
       user.owned.forEach((location) => {
-        if (!location.rooms.find((device) => device.deviceSN === existingAccessory.context.device.deviceSN)) {
+        const locationId = location.id;
+        if (
+          !location.rooms.find(
+            (device) =>
+              WarmupPlatformAccessory.buildSerialNumber(userId, locationId, device.id) ===
+              WarmupPlatformAccessory.buildSerialNumber(
+                existingAccessory.context.userId,
+                existingAccessory.context.locationId,
+                existingAccessory.context.device.id
+              )
+          )
+        ) {
           // the accessory no longer exists
           this.log.info('Removing unavailable accessory from the cache:', existingAccessory.displayName);
 

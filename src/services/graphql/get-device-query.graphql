@@ -1,6 +1,6 @@
-query getDevice {
+query getDevice($locationId: Int, $roomId: Int!) {
   user {
-    owned {
+    owned(id: $locationId) {
       room(id: $roomId) {
         id
         type
