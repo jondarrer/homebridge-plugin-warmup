@@ -149,6 +149,20 @@ describe('CurrentHeatingCoolingState', () => {
 });
 
 describe('TargetHeatingCoolingState', () => {
+  it('should set valid values to OFF, HEAT and AUTO', async () => {
+    // Arrange
+    const { TargetHeatingCoolingState } = platform.Characteristic;
+    const accessory = api.platformAccessory(BATHROOM_ACCESSORY);
+
+    // Act
+    new WarmupPlatformAccessory(platform, accessory);
+
+    // Assert
+    expect(TargetHeatingCoolingState.setProps).toHaveBeenCalledWith({
+      validValues: [TargetHeatingCoolingState.OFF, TargetHeatingCoolingState.HEAT, TargetHeatingCoolingState.AUTO],
+    });
+  });
+
   it.each([
     {
       runModeInt: RunMode.OFF,
@@ -291,6 +305,20 @@ describe('TemperatureDisplayUnits', () => {
 });
 
 describe('TargetTemperature', () => {
+  it('should set min to 5 and max to 30', async () => {
+    // Arrange
+    const { TargetTemperature } = platform.Characteristic;
+    const accessory = api.platformAccessory(BATHROOM_ACCESSORY);
+
+    // Act
+    new WarmupPlatformAccessory(platform, accessory);
+
+    // Assert
+    expect(TargetTemperature.setProps).toHaveBeenCalledWith({
+      minValue: 5,
+      maxValue: 30,
+    });
+  });
   it.each([
     { runModeInt: RunMode.OFF, runMode: 'off', overrideTemp: 250, targetTemp: 230, expected: 23 },
     { runModeInt: RunMode.SCHEDULE, runMode: 'schedule', overrideTemp: 250, targetTemp: 230, expected: 23 },

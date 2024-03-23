@@ -37,12 +37,24 @@ export class WarmupPlatformAccessory {
 
     const deviceSN = WarmupPlatformAccessory.buildSerialNumber(userId, locationId, device.id);
 
+    const {
+      Manufacturer,
+      Model,
+      SerialNumber,
+      Name,
+      CurrentHeatingCoolingState,
+      TargetHeatingCoolingState,
+      CurrentTemperature,
+      TargetTemperature,
+      TemperatureDisplayUnits,
+    } = this.platform.Characteristic;
+
     // set accessory information
     this.accessory
       .getService(this.platform.Service.AccessoryInformation)
-      .setCharacteristic(this.platform.Characteristic.Manufacturer, 'Warmup')
-      .setCharacteristic(this.platform.Characteristic.Model, `${device.type} Smart WiFi Thermostat`)
-      .setCharacteristic(this.platform.Characteristic.SerialNumber, deviceSN);
+      .setCharacteristic(Manufacturer, 'Warmup')
+      .setCharacteristic(Model, `${device.type} Smart WiFi Thermostat`)
+      .setCharacteristic(SerialNumber, deviceSN);
 
     // get the Thermostat service if it exists, otherwise create a new Thermostat service
     this.service =
@@ -50,30 +62,33 @@ export class WarmupPlatformAccessory {
       this.accessory.addService(this.platform.Service.Thermostat);
 
     // set the service name, this is what is displayed as the default name on the Home app
-    this.service.setCharacteristic(this.platform.Characteristic.Name, device.roomName);
+    this.service.setCharacteristic(Name, device.roomName);
 
     // each service must implement at-minimum the "required characteristics" for the given service type
     // see https://developers.homebridge.io/#/service/Thermostat
-    this.service
-      .getCharacteristic(this.platform.Characteristic.CurrentHeatingCoolingState)
-      .onGet(this.getCurrentHeatingCoolingState.bind(this));
+    this.service.getCharacteristic(CurrentHeatingCoolingState).onGet(this.getCurrentHeatingCoolingState.bind(this));
 
     this.service
-      .getCharacteristic(this.platform.Characteristic.TargetHeatingCoolingState)
+      .getCharacteristic(TargetHeatingCoolingState)
       .onGet(this.getTargetHeatingCoolingState.bind(this))
-      .onSet(this.setTargetHeatingCoolingState.bind(this));
+      .onSet(this.setTargetHeatingCoolingState.bind(this))
+      .setProps({
+        validValues: [TargetHeatingCoolingState.OFF, TargetHeatingCoolingState.HEAT, TargetHeatingCoolingState.AUTO],
+      });
+
+    this.service.getCharacteristic(CurrentTemperature).onGet(this.getCurrentTemperature.bind(this));
 
     this.service
-      .getCharacteristic(this.platform.Characteristic.CurrentTemperature)
-      .onGet(this.getCurrentTemperature.bind(this));
-
-    this.service
-      .getCharacteristic(this.platform.Characteristic.TargetTemperature)
+      .getCharacteristic(TargetTemperature)
       .onGet(this.getTargetTemperature.bind(this))
-      .onSet(this.setTargetTemperature.bind(this));
+      .onSet(this.setTargetTemperature.bind(this))
+      .setProps({
+        minValue: 5,
+        maxValue: 30,
+      });
 
     this.service
-      .getCharacteristic(this.platform.Characteristic.TemperatureDisplayUnits)
+      .getCharacteristic(TemperatureDisplayUnits)
       .onGet(this.getTemperatureDisplayUnits.bind(this))
       .onSet(this.setTemperatureDisplayUnits.bind(this));
   }
