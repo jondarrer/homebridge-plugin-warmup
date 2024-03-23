@@ -188,8 +188,6 @@ export class WarmupPlatformAccessory {
     }
 
     this.platform.log.debug('Set Characteristic On ->', value);
-
-    return true;
   }
 
   /**
@@ -261,8 +259,6 @@ export class WarmupPlatformAccessory {
     }
 
     this.platform.log.debug('Set Characteristic On ->', value);
-
-    return true;
   }
 
   /**

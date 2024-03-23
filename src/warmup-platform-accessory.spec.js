@@ -264,7 +264,6 @@ describe('TargetHeatingCoolingState', () => {
 
       // Assert
       expect(platform.warmupService[method]).toHaveBeenCalledWith(args);
-      expect(result).toBeTruthy();
     }
   );
 });
@@ -383,7 +382,6 @@ describe('TargetTemperature', () => {
 
     // Assert
     expect(platform.warmupService[method]).toHaveBeenCalledWith(args);
-    expect(result).toBeTruthy();
   });
 
   it.each([
