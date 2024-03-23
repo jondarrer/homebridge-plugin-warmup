@@ -1,8 +1,17 @@
+'use strict';
+
 import assert from 'assert';
 
 import { getToken, makeGQLQuery } from 'warmup-api';
 
-import { getDevicesQuery } from './graphql/index.js';
+import {
+  getDevicesQuery,
+  getDeviceQuery,
+  deviceOverrideMutation,
+  deviceOverrideCancelMutation,
+  deviceScheduleMutation,
+  deviceOffMutation,
+} from './graphql/index.js';
 
 /**
  * Communicates with the Warmup API

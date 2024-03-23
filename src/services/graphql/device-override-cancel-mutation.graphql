@@ -1,4 +1,4 @@
-mutation cancelOverride($locationId: Int, $roomId: Int) {
+mutation deviceOverrideCancel($locationId: Int, $roomId: Int) {
   cancelOverride(lid: $locationId, rid: $roomId) {
     id
     type
