@@ -67,8 +67,8 @@ export class WarmupService {
   async getDevice(locationId, roomId) {
     assert(this.token, 'Login before getting a device');
     const query = {
-      operationName: 'getDevices',
-      query: getDevicesQuery,
+      operationName: 'getDevice',
+      query: getDeviceQuery,
       variables: { locationId, roomId },
     };
 
