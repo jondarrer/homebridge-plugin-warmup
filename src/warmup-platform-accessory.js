@@ -250,18 +250,21 @@ export class WarmupPlatformAccessory {
    */
   async refreshDevice() {
     const { context } = this.accessory;
+    this.platform.log.debug(`Refreshing device ${context.device.id} with location ${context.locationId}.`);
 
     // Get the most up-to-date properties of the device
+    const response = await this.platform.warmupService.getDevice(context.locationId, context.device.id);
     const {
       data: {
         user: {
           owned: [{ room: device }],
         },
       },
-    } = await this.platform.warmupService.getDevice(context.locationId, context.device.id);
+    } = response;
 
     // Update the device with the latest values
     context.device = device;
+    this.platform.log.debug(`Device refreshed with response: ${JSON.stringify(response)}`);
 
     return device;
   }
