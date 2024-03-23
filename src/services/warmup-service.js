@@ -23,7 +23,8 @@ export class WarmupService {
    *
    * @param {string} token
    */
-  constructor(token) {
+  constructor(log, token) {
+    this.log = log;
     this.token = token ?? undefined;
   }
 
@@ -63,6 +64,8 @@ export class WarmupService {
       variables: null,
     };
 
+    this.log(`Querying GQL endpoint with ${JSON.stringify(query)}`);
+
     const result = await makeGQLQuery(query, this.token);
     return result;
   }
@@ -81,6 +84,8 @@ export class WarmupService {
       variables: { locationId, roomId },
     };
 
+    this.log(`Querying GQL endpoint with ${JSON.stringify(query)}`);
+
     return await makeGQLQuery(query, this.token);
   }
 
@@ -96,6 +101,8 @@ export class WarmupService {
       query: deviceOverrideMutation,
       variables: { locationId, roomId, temperature, minutes },
     };
+
+    this.log(`Querying GQL endpoint with ${JSON.stringify(query)}`);
 
     return await makeGQLQuery(query, this.token);
   }
@@ -113,6 +120,8 @@ export class WarmupService {
       variables: { locationId, roomId },
     };
 
+    this.log(`Querying GQL endpoint with ${JSON.stringify(query)}`);
+
     return await makeGQLQuery(query, this.token);
   }
 
@@ -129,6 +138,8 @@ export class WarmupService {
       variables: { locationId, roomId },
     };
 
+    this.log(`Querying GQL endpoint with ${JSON.stringify(query)}`);
+
     return await makeGQLQuery(query, this.token);
   }
 
@@ -144,6 +155,8 @@ export class WarmupService {
       query: deviceOffMutation,
       variables: { locationId, roomId },
     };
+
+    this.log(`Querying GQL endpoint with ${JSON.stringify(query)}`);
 
     return await makeGQLQuery(query, this.token);
   }

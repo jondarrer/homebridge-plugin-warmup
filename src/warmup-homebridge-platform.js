@@ -49,7 +49,7 @@ export class WarmupHomebridgePlatform {
     this.Characteristic = this.api.hap.Characteristic;
     this.Categories = this.api.hap.Categories;
 
-    this.warmupService = new WarmupService(this.config.token);
+    this.warmupService = new WarmupService(this.log, this.config.token);
     this.log.debug('Finished initializing platform:', this.config.name);
 
     // When this event is fired it means Homebridge has restored all cached accessories from disk.
