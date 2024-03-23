@@ -54,7 +54,8 @@ export class WarmupService {
       variables: null,
     };
 
-    return await makeGQLQuery(query, this.token);
+    const result = await makeGQLQuery(query, this.token);
+    return result;
   }
 
   /**
