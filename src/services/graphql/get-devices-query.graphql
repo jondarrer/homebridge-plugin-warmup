@@ -1,27 +1,30 @@
-user {
-  owned {
+query getDevices {
+  user {
     id
-    name
-    rooms {
+    owned {
       id
-      type
-      roomName
-      comfortTemp
-      currentTemp
-      mainTemp
-      mainLabel
-      secondaryTemp
-      secondaryLabel
-      sleepTemp
-      overrideDur
-      overrideTemp
-      fixedTemp
-      awayTemp
-      targetTemp
-      runMode
-      runModeInt
-      roomMode
-      roomModeInt
+      name
+      rooms {
+        id
+        type
+        roomName
+        comfortTemp
+        currentTemp
+        mainTemp
+        mainLabel
+        secondaryTemp
+        secondaryLabel
+        sleepTemp
+        overrideDur
+        overrideTemp
+        fixedTemp
+        awayTemp
+        targetTemp
+        runMode
+        runModeInt
+        roomMode
+        roomModeInt
+      }
     }
   }
 }

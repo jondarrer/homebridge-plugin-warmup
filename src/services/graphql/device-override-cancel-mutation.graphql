@@ -1,24 +1,23 @@
-cancelOverride(
-  lid: $locationId
-  rid: $roomId
-) {
-  id
-  type
-  roomName
-  comfortTemp
-  currentTemp
-  mainTemp
-  mainLabel
-  secondaryTemp
-  secondaryLabel
-  sleepTemp
-  overrideDur
-  overrideTemp
-  fixedTemp
-  awayTemp
-  targetTemp
-  runMode
-  runModeInt
-  roomMode
-  roomModeInt
+mutation cancelOverride($locationId: Int, $roomId: Int) {
+  cancelOverride(lid: $locationId, rid: $roomId) {
+    id
+    type
+    roomName
+    comfortTemp
+    currentTemp
+    mainTemp
+    mainLabel
+    secondaryTemp
+    secondaryLabel
+    sleepTemp
+    overrideDur
+    overrideTemp
+    fixedTemp
+    awayTemp
+    targetTemp
+    runMode
+    runModeInt
+    roomMode
+    roomModeInt
+  }
 }

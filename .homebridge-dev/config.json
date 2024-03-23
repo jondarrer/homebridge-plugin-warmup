@@ -1,0 +1,10 @@
+{
+  "platforms": [
+    {
+      "platform": "HomebridgePluginWarmup",
+      "name": "homebridge-plugin-warmup",
+      "token": ""
+    }
+  ],
+  "accessories": []
+}

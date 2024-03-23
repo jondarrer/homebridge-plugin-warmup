@@ -130,3 +130,7 @@ out
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# homebridge
+.homebridge-dev/accessories
+.homebridge-dev/persist

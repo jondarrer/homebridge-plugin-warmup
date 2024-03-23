@@ -1,7 +1,5 @@
-  cancelOverride(
-    lid: $locationId
-    rid: $roomId
-  ) {
+mutation deviceSchedule($locationId: Int, $roomId: Int) {
+  cancelOverride(lid: $locationId, rid: $roomId) {
     id
     type
     roomName
@@ -22,3 +20,4 @@
     roomMode
     roomModeInt
   }
+}

@@ -107,9 +107,9 @@ describe('WarmupHomebridgePlatform', () => {
   it('should register new accessories', async () => {
     // Arrange
     new WarmupHomebridgePlatform(log, config, api);
-    jest
-      .spyOn(WarmupService.prototype, 'getDevices')
-      .mockResolvedValue({ user: { owned: [{ id: LOCATION_ID, rooms: [BATHROOM_DEVICE, KITCHEN_DEVICE] }] } });
+    jest.spyOn(WarmupService.prototype, 'getDevices').mockResolvedValue({
+      data: { user: { owned: [{ id: LOCATION_ID, rooms: [BATHROOM_DEVICE, KITCHEN_DEVICE] }] } },
+    });
 
     // Act
     await api.emit('didFinishLaunching');
@@ -147,9 +147,9 @@ describe('WarmupHomebridgePlatform', () => {
   it('should restore existing accessories', async () => {
     // Arrange
     const plugin = new WarmupHomebridgePlatform(log, config, api);
-    jest
-      .spyOn(WarmupService.prototype, 'getDevices')
-      .mockResolvedValue({ user: { owned: [{ id: LOCATION_ID, rooms: [BATHROOM_DEVICE, KITCHEN_DEVICE] }] } });
+    jest.spyOn(WarmupService.prototype, 'getDevices').mockResolvedValue({
+      data: { user: { owned: [{ id: LOCATION_ID, rooms: [BATHROOM_DEVICE, KITCHEN_DEVICE] }] } },
+    });
     plugin.configureAccessory(api.platformAccessory(BATHROOM_ACCESSORY));
 
     // Act
@@ -177,7 +177,7 @@ describe('WarmupHomebridgePlatform', () => {
     const plugin = new WarmupHomebridgePlatform(log, config, api);
     jest
       .spyOn(WarmupService.prototype, 'getDevices')
-      .mockResolvedValue({ user: { owned: [{ id: LOCATION_ID, rooms: [KITCHEN_DEVICE] }] } });
+      .mockResolvedValue({ data: { user: { owned: [{ id: LOCATION_ID, rooms: [KITCHEN_DEVICE] }] } } });
     plugin.configureAccessory(api.platformAccessory(BATHROOM_ACCESSORY));
 
     // Act

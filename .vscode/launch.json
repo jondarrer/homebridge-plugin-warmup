@@ -1,0 +1,11 @@
+{
+  "configurations": [
+    {
+      "type": "node-terminal",
+      "name": "npm run local-homebridge",
+      "request": "launch",
+      "command": "npm run local-homebridge",
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}

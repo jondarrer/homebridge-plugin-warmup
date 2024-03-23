@@ -84,12 +84,14 @@ This will run the tests with a coverage report (requires 100% across the board t
 open coverage/lcov-report/index.html
 ```
 
+Debug within VS Code by running the `npm run local-homebridge` task.
+
 ### Building and publishing
 
 ```sh
 npm run build
-npm version bump
-git push --tags
+npm version patch -m "%s"
+git push && git push --tags
 ```
 
 ## Credits
