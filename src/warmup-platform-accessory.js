@@ -98,11 +98,13 @@ export class WarmupPlatformAccessory {
    * @returns {Promise<import('homebridge').CharacteristicValue>}
    */
   async getCurrentHeatingCoolingState() {
-    const device = await this.refreshDevice();
+    const {
+      device: { runModeInt },
+    } = await this.refreshDevice();
 
     const { CurrentHeatingCoolingState } = this.platform.Characteristic;
 
-    switch (device.runModeInt) {
+    switch (runModeInt) {
       case RunMode.OFF:
         return CurrentHeatingCoolingState.OFF;
       case RunMode.SCHEDULE:
@@ -120,12 +122,14 @@ export class WarmupPlatformAccessory {
   async getTargetHeatingCoolingState() {
     await this.refreshDevice();
     const {
-      context: { device },
+      context: {
+        device: { runModeInt },
+      },
     } = this.accessory;
 
     const { TargetHeatingCoolingState } = this.platform.Characteristic;
 
-    switch (device.runModeInt) {
+    switch (runModeInt) {
       case RunMode.OFF:
         return TargetHeatingCoolingState.OFF;
       case RunMode.SCHEDULE:
@@ -142,24 +146,27 @@ export class WarmupPlatformAccessory {
    * @param {Promise<import('homebridge').CharacteristicValue} value
    */
   async setTargetHeatingCoolingState(value) {
-    const device = await this.refreshDevice();
+    const {
+      locationId,
+      device: { id, runMode },
+    } = await this.refreshDevice();
 
     const { TargetHeatingCoolingState, TargetTemperature } = this.platform.Characteristic;
 
     switch (value) {
       case TargetHeatingCoolingState.OFF: // Off
-        await this.platform.warmupService.deviceOff({ locationId: device.locationId, roomId: device.id });
+        await this.platform.warmupService.deviceOff({ locationId, roomId: id });
         break;
       case TargetHeatingCoolingState.HEAT: // Heat
-        if (device.runMode === 'fixed') {
+        if (runMode === 'fixed') {
           // Do nothing, as can't do anything with fixed
         } else {
           // device.runMode === 'override' || device.runMode === 'schedule' || device.runMode === 'off'
 
           const targetTemperature = this.service.getCharacteristic(TargetTemperature).value;
           await this.platform.warmupService.deviceOverride({
-            locationId: device.locationId,
-            roomId: device.id,
+            locationId: locationId,
+            roomId: id,
             temperature: targetTemperature * 10,
             minutes: 60,
           });
@@ -168,7 +175,7 @@ export class WarmupPlatformAccessory {
         }
         break;
       case TargetHeatingCoolingState.AUTO: // Auto
-        await this.platform.warmupService.deviceOverrideCancel({ locationId: device.locationId, roomId: device.id });
+        await this.platform.warmupService.deviceOverrideCancel({ locationId: locationId, roomId: id });
 
         await this.refreshDevice();
         break;
@@ -205,7 +212,7 @@ export class WarmupPlatformAccessory {
    * @returns {Promise<Promise<import('homebridge').CharacteristicValue>}
    */
   async getTargetTemperature() {
-    const device = await this.refreshDevice();
+    const { device } = await this.refreshDevice();
 
     switch (device.runModeInt) {
       case RunMode.OVERRIDE:
@@ -224,15 +231,18 @@ export class WarmupPlatformAccessory {
    * @param {Promise<import('homebridge').CharacteristicValue} value
    */
   async setTargetTemperature(value) {
-    const device = await this.refreshDevice();
+    const {
+      locationId,
+      device: { runMode, id },
+    } = await this.refreshDevice();
 
-    switch (device.runMode) {
+    switch (runMode) {
       case 'fixed':
       case 'schedule':
       case 'override':
         await this.platform.warmupService.deviceOverride({
-          locationId: device.locationId,
-          roomId: device.id,
+          locationId: locationId,
+          roomId: id,
           temperature: value * 10,
           minutes: 60,
         });
@@ -254,9 +264,11 @@ export class WarmupPlatformAccessory {
    * @returns {Promise<Promise<import('homebridge').CharacteristicValue>}
    */
   async getCurrentTemperature() {
-    const device = await this.refreshDevice();
+    const {
+      device: { currentTemp },
+    } = await this.refreshDevice();
 
-    return device.currentTemp / 10;
+    return currentTemp / 10;
   }
 
   /**
@@ -264,11 +276,17 @@ export class WarmupPlatformAccessory {
    * @returns {Promise<any>}
    */
   async refreshDevice() {
-    const { context } = this.accessory;
-    this.platform.log.debug(`Refreshing device ${context.device.id} with location ${context.locationId}.`);
+    const {
+      context,
+      context: {
+        locationId,
+        device: { id },
+      },
+    } = this.accessory;
+    this.platform.log.debug(`Refreshing device ${id} with location ${locationId}.`);
 
     // Get the most up-to-date properties of the device
-    const response = await this.platform.warmupService.getDevice(context.locationId, context.device.id);
+    const response = await this.platform.warmupService.getDevice(locationId, id);
     const {
       data: {
         user: {
@@ -281,6 +299,6 @@ export class WarmupPlatformAccessory {
     context.device = device;
     this.platform.log.debug(`Device refreshed with response: ${JSON.stringify(response)}`);
 
-    return device;
+    return context;
   }
 }
