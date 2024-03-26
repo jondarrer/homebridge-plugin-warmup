@@ -107,21 +107,30 @@ export class WarmupPlatformAccessory {
    * @returns {Promise<import('homebridge').CharacteristicValue>}
    */
   async getCurrentHeatingCoolingState() {
+    this.platform.log.debug(`[${this.accessory.context.device.roomName}] CurrentHeatingCoolingState begin reading`);
+
     const {
-      device: { runModeInt },
+      device: { roomName, runModeInt },
     } = await this.refreshDevice();
 
     const { CurrentHeatingCoolingState } = this.platform.Characteristic;
+    let result;
 
     switch (runModeInt) {
       case RunMode.OFF:
-        return CurrentHeatingCoolingState.OFF;
+        result = CurrentHeatingCoolingState.OFF;
+        break;
       case RunMode.SCHEDULE:
       case RunMode.FIXED:
       case RunMode.OVERRIDE:
       default:
-        return CurrentHeatingCoolingState.HEAT;
+        result = CurrentHeatingCoolingState.HEAT;
+        break;
     }
+
+    this.platform.log.debug(`[${roomName}] CurrentHeatingCoolingState read as`, result);
+
+    return result;
   }
 
   /**
@@ -129,25 +138,32 @@ export class WarmupPlatformAccessory {
    * @returns {Promise<Promise<import('homebridge').CharacteristicValue>}
    */
   async getTargetHeatingCoolingState() {
-    await this.refreshDevice();
+    this.platform.log.debug(`[${this.accessory.context.device.roomName}] TargetHeatingCoolingState begin reading`);
+
     const {
-      context: {
-        device: { runModeInt },
-      },
-    } = this.accessory;
+      device: { roomName, runModeInt },
+    } = await this.refreshDevice();
 
     const { TargetHeatingCoolingState } = this.platform.Characteristic;
+    let result;
 
     switch (runModeInt) {
       case RunMode.OFF:
-        return TargetHeatingCoolingState.OFF;
+        result = TargetHeatingCoolingState.OFF;
+        break;
       case RunMode.SCHEDULE:
-        return TargetHeatingCoolingState.AUTO;
+        result = TargetHeatingCoolingState.AUTO;
+        break;
       case RunMode.FIXED:
       case RunMode.OVERRIDE:
       default:
-        return TargetHeatingCoolingState.HEAT;
+        result = TargetHeatingCoolingState.HEAT;
+        break;
     }
+
+    this.platform.log.debug(`[${roomName}] TargetHeatingCoolingState read as`, result);
+
+    return result;
   }
 
   /**
@@ -156,23 +172,45 @@ export class WarmupPlatformAccessory {
    */
   async setTargetHeatingCoolingState(value) {
     const {
-      locationId,
-      device: { id, runMode },
-    } = await this.refreshDevice();
+      context: {
+        locationId,
+        device: { id, roomName, runMode },
+      },
+    } = this.accessory;
+
+    this.platform.log.debug(`[${roomName}] TargetHeatingCoolingState begin setting`, value);
 
     const { TargetHeatingCoolingState, TargetTemperature } = this.platform.Characteristic;
 
     switch (value) {
       case TargetHeatingCoolingState.OFF: // Off
         await this.platform.warmupService.deviceOff({ locationId, roomId: id });
+
+        await this.refreshDevice();
+
+        this.platform.log.debug(
+          `[${roomName}] TargetHeatingCoolingState set to`,
+          TargetHeatingCoolingState.OFF,
+          'and device turned off'
+        );
+
         break;
       case TargetHeatingCoolingState.HEAT: // Heat
         if (runMode === 'fixed') {
-          // Do nothing, as can't do anything with fixed
+          // We can't do anything with fixed
+
+          this.platform.log.warn(
+            `[${roomName}] TargetHeatingCoolingState set to`,
+            TargetHeatingCoolingState.HEAT,
+            'but cannot as run mode is fixed'
+          );
+
+          throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.NOT_ALLOWED_IN_CURRENT_STATE);
         } else {
-          // device.runMode === 'override' || device.runMode === 'schedule' || device.runMode === 'off'
+          // runMode === 'override' || runMode === 'schedule' || runMode === 'off'
 
           const targetTemperature = this.service.getCharacteristic(TargetTemperature).value;
+
           await this.platform.warmupService.deviceOverride({
             locationId: locationId,
             roomId: id,
@@ -181,16 +219,28 @@ export class WarmupPlatformAccessory {
           });
 
           await this.refreshDevice();
+
+          this.platform.log.debug(
+            `[${roomName}] TargetHeatingCoolingState set to`,
+            TargetHeatingCoolingState.HEAT,
+            `and an override has requested for the target of ${targetTemperature}`
+          );
         }
+
         break;
       case TargetHeatingCoolingState.AUTO: // Auto
-        await this.platform.warmupService.deviceOverrideCancel({ locationId: locationId, roomId: id });
+        await this.platform.warmupService.deviceOverrideCancel({ locationId, roomId: id });
 
         await this.refreshDevice();
+
+        this.platform.log.debug(
+          `[${roomName}] TargetHeatingCoolingState set to`,
+          TargetHeatingCoolingState.AUTO,
+          'and override cancelled'
+        );
+
         break;
     }
-
-    this.platform.log.debug('Set Characteristic On ->', value);
   }
 
   /**
@@ -198,9 +248,17 @@ export class WarmupPlatformAccessory {
    * @returns {Promise<Promise<import('homebridge').CharacteristicValue>}
    */
   async getTemperatureDisplayUnits() {
+    const {
+      context: {
+        device: { roomName },
+      },
+    } = this.accessory;
+
+    this.platform.log.debug(`[${roomName}] TemperatureDisplayUnits begin reading`);
+
     const { TemperatureDisplayUnits } = this.platform.Characteristic;
 
-    this.platform.log.debug('Get Characteristic TemperatureDisplayUnits ->', TemperatureDisplayUnits.CELSIUS);
+    this.platform.log.debug(`[${roomName}] TemperatureDisplayUnits read as`, TemperatureDisplayUnits.CELSIUS);
 
     return TemperatureDisplayUnits.CELSIUS;
   }
@@ -210,7 +268,14 @@ export class WarmupPlatformAccessory {
    * @param {Promise<import('homebridge').CharacteristicValue} value
    */
   async setTemperatureDisplayUnits(value) {
-    this.platform.log.warn(`Attempted change of temperature units to ${value}`);
+    const {
+      context: {
+        device: { roomName },
+      },
+    } = this.accessory;
+
+    this.platform.log.warn(`[${roomName}] TemperatureDisplayUnits attempted to set to`, value);
+
     throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.READ_ONLY_CHARACTERISTIC);
   }
 
@@ -219,18 +284,30 @@ export class WarmupPlatformAccessory {
    * @returns {Promise<Promise<import('homebridge').CharacteristicValue>}
    */
   async getTargetTemperature() {
-    const { device } = await this.refreshDevice();
+    this.platform.log.debug(`[${this.accessory.context.device.roomName}] TargetTemperature begin reading`);
 
-    switch (device.runModeInt) {
+    const {
+      device: { overrideTemp, roomName, runModeInt, targetTemp },
+    } = await this.refreshDevice();
+
+    let result;
+
+    switch (runModeInt) {
       case RunMode.OVERRIDE:
-        return device.overrideTemp / 10;
+        result = overrideTemp / 10;
+        break;
       // We'll get the target temperature for the device even though it's marked as off
       case RunMode.OFF:
       case RunMode.SCHEDULE:
       case RunMode.FIXED:
       default:
-        return device.targetTemp / 10;
+        result = targetTemp / 10;
+        break;
     }
+
+    this.platform.log.debug(`[${roomName}] TargetTemperature read as`, result);
+
+    return result;
   }
 
   /**
@@ -239,12 +316,17 @@ export class WarmupPlatformAccessory {
    */
   async setTargetTemperature(value) {
     const {
-      locationId,
-      device: { runMode, id },
-    } = await this.refreshDevice();
+      context: {
+        locationId,
+        device: { id, roomName, runMode },
+      },
+    } = this.accessory;
+
+    this.platform.log.debug(`[${roomName}] TargetTemperature begin setting`, value);
+
+    const { TargetHeatingCoolingState } = this.platform.Characteristic;
 
     switch (runMode) {
-      case 'fixed':
       case 'schedule':
       case 'override':
         await this.platform.warmupService.deviceOverride({
@@ -255,13 +337,27 @@ export class WarmupPlatformAccessory {
         });
 
         await this.refreshDevice();
+
+        this.platform.log.debug(`[${roomName}] TargetTemperature set to`, value);
+
+        if (this.service.getCharacteristic(TargetHeatingCoolingState).value !== TargetHeatingCoolingState.HEAT) {
+          this.service.getCharacteristic(TargetHeatingCoolingState).updateValue(TargetHeatingCoolingState.HEAT);
+        }
+
         break;
       case 'off':
+      case 'fixed':
       default:
+        // runMode === 'off' || runMode === 'fixed'
+
+        this.platform.log.warn(
+          `[${roomName}] TargetTemperature attempted to set to`,
+          value,
+          `but run mode is currently ${runMode}`
+        );
+
         throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.NOT_ALLOWED_IN_CURRENT_STATE);
     }
-
-    this.platform.log.debug('Set Characteristic On ->', value);
   }
 
   /**
@@ -269,9 +365,13 @@ export class WarmupPlatformAccessory {
    * @returns {Promise<Promise<import('homebridge').CharacteristicValue>}
    */
   async getCurrentTemperature() {
+    this.platform.log.debug(`[${this.accessory.context.device.roomName}] CurrentTemperature begin reading`);
+
     const {
-      device: { currentTemp },
+      device: { currentTemp, roomName },
     } = await this.refreshDevice();
+
+    this.platform.log.debug(`[${roomName}] CurrentTemperature read as`, currentTemp / 10);
 
     return currentTemp / 10;
   }
@@ -285,10 +385,10 @@ export class WarmupPlatformAccessory {
       context,
       context: {
         locationId,
-        device: { id },
+        device: { roomName, id },
       },
     } = this.accessory;
-    this.platform.log.debug(`Refreshing device ${id} with location ${locationId}.`);
+    this.platform.log.debug(`[${roomName}] Refreshing device ${id} with location ${locationId}.`);
 
     // Get the most up-to-date properties of the device
     const response = await this.platform.warmupService.getDevice(locationId, id);
@@ -302,7 +402,7 @@ export class WarmupPlatformAccessory {
 
     // Update the device with the latest values
     context.device = device;
-    this.platform.log.debug(`Device refreshed with response: ${JSON.stringify(response)}`);
+    this.platform.log.debug(`[${device?.roomName}] Device refreshed with response: ${JSON.stringify(response)}`);
 
     return context;
   }

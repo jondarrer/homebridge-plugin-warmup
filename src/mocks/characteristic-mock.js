@@ -30,6 +30,8 @@ export class CharacteristicMock {
 
   setProps = jest.fn();
 
+  updateValue = jest.fn();
+
   constructor(name) {
     this.name = name;
     this.value = null;

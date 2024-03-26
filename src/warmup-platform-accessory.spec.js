@@ -197,8 +197,8 @@ describe('TargetHeatingCoolingState', () => {
   ])('should get state as $expectedText when run mode is $runMode', async ({ runModeInt, runMode, expected }) => {
     // Arrange
     const { TargetHeatingCoolingState } = platform.Characteristic;
-    jest.spyOn(WarmupService.prototype, 'getDevice').mockResolvedValue({
-      data: { user: { owned: [{ id: LOCATION_ID, room: { ...BATHROOM_DEVICE, runModeInt, runMode } }] } },
+    jest.spyOn(platform.warmupService, 'getDevice').mockResolvedValue({
+      data: { user: { owned: [{ room: { ...BATHROOM_DEVICE, runModeInt, runMode } }] } },
     });
     const accessory = api.platformAccessory(BATHROOM_ACCESSORY);
     const thermostat = new WarmupPlatformAccessory(platform, accessory);
@@ -251,7 +251,7 @@ describe('TargetHeatingCoolingState', () => {
       jest.spyOn(platform.warmupService, 'getDevice').mockResolvedValue({
         data: { user: { owned: [{ room: { ...BATHROOM_DEVICE, runModeInt, runMode } }] } },
       });
-      jest.spyOn(platform.warmupService, method).mockResolvedValue(true);
+      jest.spyOn(platform.warmupService, method).mockResolvedValue();
       if (args.hasOwnProperty('temperature')) {
         TargetTemperature.value = args.temperature / 10;
       }
@@ -368,12 +368,6 @@ describe('TargetTemperature', () => {
       args: { locationId: LOCATION_ID, roomId: BATHROOM_DEVICE.id, temperature: 195, minutes: 60 },
     },
     {
-      runModeInt: RunMode.FIXED,
-      runMode: 'fixed',
-      method: 'deviceOverride',
-      args: { locationId: LOCATION_ID, roomId: BATHROOM_DEVICE.id, temperature: 195, minutes: 60 },
-    },
-    {
       runModeInt: RunMode.OVERRIDE,
       runMode: 'override',
       method: 'deviceOverride',
@@ -385,8 +379,15 @@ describe('TargetTemperature', () => {
     jest.spyOn(platform.warmupService, 'getDevice').mockResolvedValue({
       data: { user: { owned: [{ room: { ...BATHROOM_DEVICE, runModeInt, runMode } }] } },
     });
-    jest.spyOn(platform.warmupService, method).mockResolvedValue(true);
-    const accessory = api.platformAccessory(BATHROOM_ACCESSORY);
+    jest.spyOn(platform.warmupService, method).mockResolvedValue();
+    const accessory = api.platformAccessory({
+      ...BATHROOM_ACCESSORY,
+      context: {
+        userId: USER_ID,
+        locationId: LOCATION_ID,
+        device: { ...BATHROOM_DEVICE, runModeInt, runMode },
+      },
+    });
     const thermostat = new WarmupPlatformAccessory(platform, accessory);
     platform.warmupService.token = 'logged in';
 
@@ -399,10 +400,18 @@ describe('TargetTemperature', () => {
 
   it.each([
     {
+      runModeInt: RunMode.FIXED,
+      runMode: 'fixed',
+      method: 'deviceOverride',
+      args: { locationId: LOCATION_ID, roomId: BATHROOM_DEVICE.id, temperature: 195, minutes: 60 },
+      // throws is a function as api is not available until the test is running
+      throws: () => api.hap.HapStatusError(api.hap.HAPStatus.NOT_ALLOWED_IN_CURRENT_STATE),
+    },
+    {
       runModeInt: RunMode.OFF,
       runMode: 'off',
       method: 'deviceOverride',
-      args: { locationId: BATHROOM_DEVICE.locationId, roomId: BATHROOM_DEVICE.id, temperature: 185, minutes: 60 },
+      args: { locationId: LOCATION_ID, roomId: BATHROOM_DEVICE.id, temperature: 185, minutes: 60 },
       // throws is a function as api is not available until the test is running
       throws: () => api.hap.HapStatusError(api.hap.HAPStatus.NOT_ALLOWED_IN_CURRENT_STATE),
     },
