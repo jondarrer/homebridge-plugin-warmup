@@ -28,7 +28,7 @@ export class CharacteristicMock {
   on = (eventName, fn) => (this[eventName] = fn);
   emit = (eventName, args) => this[eventName](args);
 
-  setProps = jest.fn();
+  setProps = jest.fn().mockImplementation(() => this);
 
   updateValue = jest.fn();
 

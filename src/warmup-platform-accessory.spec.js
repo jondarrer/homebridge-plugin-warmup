@@ -194,6 +194,59 @@ describe('TargetHeatingCoolingState', () => {
       expected: CharacteristicMock.TargetHeatingCoolingState.HEAT,
       expectedText: 'HEAT',
     },
+  ])(
+    'should set the initial state to $expectedText when run mode is $runMode',
+    async ({ runModeInt, runMode, expected }) => {
+      // Arrange
+      const { TargetHeatingCoolingState } = platform.Characteristic;
+      const accessory = api.platformAccessory({
+        ...BATHROOM_ACCESSORY,
+        context: {
+          userId: USER_ID,
+          locationId: LOCATION_ID,
+          device: { ...BATHROOM_DEVICE, runModeInt, runMode },
+        },
+      });
+
+      // Act
+      new WarmupPlatformAccessory(platform, accessory);
+
+      // Assert
+      expect(TargetHeatingCoolingState.updateValue).toHaveBeenCalledWith(expected);
+    }
+  );
+
+  it.each([
+    {
+      runModeInt: RunMode.OFF,
+      runMode: 'off',
+      expected: CharacteristicMock.TargetHeatingCoolingState.OFF,
+      expectedText: 'OFF',
+    },
+    {
+      runModeInt: RunMode.SCHEDULE,
+      runMode: 'schedule',
+      expected: CharacteristicMock.TargetHeatingCoolingState.AUTO,
+      expectedText: 'AUTO',
+    },
+    {
+      runModeInt: RunMode.FIXED,
+      runMode: 'fixed',
+      expected: CharacteristicMock.TargetHeatingCoolingState.HEAT,
+      expectedText: 'HEAT',
+    },
+    {
+      runModeInt: RunMode.OVERRIDE,
+      runMode: 'override',
+      expected: CharacteristicMock.TargetHeatingCoolingState.HEAT,
+      expectedText: 'HEAT',
+    },
+    {
+      runModeInt: undefined,
+      runMode: undefined,
+      expected: CharacteristicMock.TargetHeatingCoolingState.HEAT,
+      expectedText: 'HEAT',
+    },
   ])('should get state as $expectedText when run mode is $runMode', async ({ runModeInt, runMode, expected }) => {
     // Arrange
     const { TargetHeatingCoolingState } = platform.Characteristic;
@@ -287,7 +340,7 @@ describe('TemperatureDisplayUnits', () => {
     const { TemperatureDisplayUnits } = platform.Characteristic;
     jest
       .fn(WarmupService.prototype, 'getDevice')
-      .mockResolvedValue({ data: { user: { owned: [{ id: LOCATION_ID, room: { BATHROOM_DEVICE } }] } } });
+      .mockResolvedValue({ data: { user: { owned: [{ room: { BATHROOM_DEVICE } }] } } });
     const accessory = api.platformAccessory(BATHROOM_ACCESSORY);
     const thermostat = new WarmupPlatformAccessory(platform, accessory);
 
@@ -303,7 +356,7 @@ describe('TemperatureDisplayUnits', () => {
     const { TemperatureDisplayUnits } = platform.Characteristic;
     jest
       .fn(platform.warmupService, 'getDevice')
-      .mockResolvedValue({ data: { user: { owned: [{ id: LOCATION_ID, room: { BATHROOM_DEVICE } }] } } });
+      .mockResolvedValue({ data: { user: { owned: [{ room: { BATHROOM_DEVICE } }] } } });
     const accessory = api.platformAccessory(BATHROOM_ACCESSORY);
     const thermostat = new WarmupPlatformAccessory(platform, accessory);
     platform.warmupService.token = 'logged in';
@@ -317,6 +370,26 @@ describe('TemperatureDisplayUnits', () => {
 });
 
 describe('TargetTemperature', () => {
+  it('should set the initial target temperature', async () => {
+    // Arrange
+    const targetTemp = 100;
+    const { TargetTemperature } = platform.Characteristic;
+    const accessory = api.platformAccessory({
+      ...BATHROOM_ACCESSORY,
+      context: {
+        userId: USER_ID,
+        locationId: LOCATION_ID,
+        device: { ...BATHROOM_DEVICE, targetTemp },
+      },
+    });
+
+    // Act
+    new WarmupPlatformAccessory(platform, accessory);
+
+    // Assert
+    expect(TargetTemperature.updateValue).toHaveBeenCalledWith(targetTemp / 10);
+  });
+
   it('should set min to 5 and max to 30', async () => {
     // Arrange
     const { TargetTemperature } = platform.Characteristic;
@@ -419,7 +492,7 @@ describe('TargetTemperature', () => {
       runModeInt: undefined,
       runMode: undefined,
       method: 'deviceOverride',
-      args: { locationId: BATHROOM_DEVICE.locationId, roomId: BATHROOM_DEVICE.id, temperature: 195, minutes: 60 },
+      args: { locationId: LOCATION_ID, roomId: BATHROOM_DEVICE.id, temperature: 195, minutes: 60 },
       // throws is a function as api is not available until the test is running
       throws: () => api.hap.HapStatusError(api.hap.HAPStatus.NOT_ALLOWED_IN_CURRENT_STATE),
     },
@@ -443,6 +516,25 @@ describe('TargetTemperature', () => {
 });
 
 describe('CurrentTemperature', () => {
+  it('should set the initial current temperature', async () => {
+    // Arrange
+    const currentTemp = 100;
+    const { CurrentTemperature } = platform.Characteristic;
+    const accessory = api.platformAccessory({
+      ...BATHROOM_ACCESSORY,
+      context: {
+        userId: USER_ID,
+        locationId: LOCATION_ID,
+        device: { ...BATHROOM_DEVICE, currentTemp },
+      },
+    });
+
+    // Act
+    new WarmupPlatformAccessory(platform, accessory);
+
+    // Assert
+    expect(CurrentTemperature.updateValue).toHaveBeenCalledWith(currentTemp / 10);
+  });
   it('should get the current temperature', async () => {
     // Arrange
     const { CurrentTemperature } = platform.Characteristic;

@@ -66,13 +66,23 @@ export class WarmupPlatformAccessory {
 
     // each service must implement at-minimum the "required characteristics" for the given service type
     // see https://developers.homebridge.io/#/service/Thermostat
-    this.service
-      .getCharacteristic(CurrentHeatingCoolingState)
-      .onGet(this.getCurrentHeatingCoolingState.bind(this))
-      .setProps({
-        minValue: -10,
-        maxValue: 50,
-      });
+    this.service.getCharacteristic(CurrentHeatingCoolingState).onGet(this.getCurrentHeatingCoolingState.bind(this));
+
+    let targetHeatingCoolingState;
+
+    switch (device.runModeInt) {
+      case RunMode.OFF:
+        targetHeatingCoolingState = TargetHeatingCoolingState.OFF;
+        break;
+      case RunMode.SCHEDULE:
+        targetHeatingCoolingState = TargetHeatingCoolingState.AUTO;
+        break;
+      case RunMode.FIXED:
+      case RunMode.OVERRIDE:
+      default:
+        targetHeatingCoolingState = TargetHeatingCoolingState.HEAT;
+        break;
+    }
 
     this.service
       .getCharacteristic(TargetHeatingCoolingState)
@@ -80,9 +90,17 @@ export class WarmupPlatformAccessory {
       .onSet(this.setTargetHeatingCoolingState.bind(this))
       .setProps({
         validValues: [TargetHeatingCoolingState.OFF, TargetHeatingCoolingState.HEAT, TargetHeatingCoolingState.AUTO],
-      });
+      })
+      .updateValue(targetHeatingCoolingState);
 
-    this.service.getCharacteristic(CurrentTemperature).onGet(this.getCurrentTemperature.bind(this));
+    this.service
+      .getCharacteristic(CurrentTemperature)
+      .onGet(this.getCurrentTemperature.bind(this))
+      .setProps({
+        minValue: -10,
+        maxValue: 50,
+      })
+      .updateValue(device.currentTemp / 10);
 
     this.service
       .getCharacteristic(TargetTemperature)
@@ -91,7 +109,8 @@ export class WarmupPlatformAccessory {
       .setProps({
         minValue: 5,
         maxValue: 30,
-      });
+      })
+      .updateValue(device.targetTemp / 10);
 
     this.service
       .getCharacteristic(TemperatureDisplayUnits)
