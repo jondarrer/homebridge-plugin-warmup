@@ -1,7 +1,7 @@
 {
   "private": false,
   "name": "homebridge-plugin-warmup",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "My very first Homebridge plugin to help me learn about Homebridge plugins",
   "license": "Apache-2.0",
   "repository": {
