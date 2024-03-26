@@ -269,6 +269,19 @@ describe('TargetHeatingCoolingState', () => {
 });
 
 describe('TemperatureDisplayUnits', () => {
+  it('should set valid values to CELSIUS', async () => {
+    // Arrange
+    const { TemperatureDisplayUnits } = platform.Characteristic;
+    const accessory = api.platformAccessory(BATHROOM_ACCESSORY);
+
+    // Act
+    new WarmupPlatformAccessory(platform, accessory);
+
+    // Assert
+    expect(TemperatureDisplayUnits.setProps).toHaveBeenCalledWith({
+      validValues: [TemperatureDisplayUnits.CELSIUS],
+    });
+  });
   it('should get CELSIUS', async () => {
     // Arrange
     const { TemperatureDisplayUnits } = platform.Characteristic;

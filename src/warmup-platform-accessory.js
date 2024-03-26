@@ -96,7 +96,10 @@ export class WarmupPlatformAccessory {
     this.service
       .getCharacteristic(TemperatureDisplayUnits)
       .onGet(this.getTemperatureDisplayUnits.bind(this))
-      .onSet(this.setTemperatureDisplayUnits.bind(this));
+      .onSet(this.setTemperatureDisplayUnits.bind(this))
+      .setProps({
+        validValues: [TemperatureDisplayUnits.CELSIUS],
+      });
   }
 
   /**
