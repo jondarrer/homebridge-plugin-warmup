@@ -250,12 +250,21 @@ export class WarmupPlatformAccessory {
       case TargetHeatingCoolingState.AUTO: // Auto
         await this.platform.warmupService.deviceOverrideCancel({ locationId, roomId: id });
 
-        await this.refreshDevice();
+        const {
+          device: { targetTemp: newTargetTemp },
+        } = await this.refreshDevice();
 
         this.platform.log.debug(
           `[${roomName}] TargetHeatingCoolingState set to`,
           TargetHeatingCoolingState.AUTO,
           'and override cancelled'
+        );
+
+        this.service.getCharacteristic(TargetTemperature).updateValue(newTargetTemp / 10);
+
+        this.platform.log.debug(
+          `[${roomName}] TargetHeatingCoolingState setting TargetTemperature to`,
+          newTargetTemp / 10
         );
 
         break;
@@ -359,9 +368,12 @@ export class WarmupPlatformAccessory {
 
         this.platform.log.debug(`[${roomName}] TargetTemperature set to`, value);
 
-        if (this.service.getCharacteristic(TargetHeatingCoolingState).value !== TargetHeatingCoolingState.HEAT) {
-          this.service.getCharacteristic(TargetHeatingCoolingState).updateValue(TargetHeatingCoolingState.HEAT);
-        }
+        this.service.getCharacteristic(TargetHeatingCoolingState).updateValue(TargetHeatingCoolingState.HEAT);
+
+        this.platform.log.debug(
+          `[${roomName}] TargetTemperature setting TargetHeatingCoolingState to`,
+          TargetHeatingCoolingState.HEAT
+        );
 
         break;
       case 'off':

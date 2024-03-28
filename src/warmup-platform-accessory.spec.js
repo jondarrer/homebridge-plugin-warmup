@@ -319,6 +319,50 @@ describe('TargetHeatingCoolingState', () => {
       expect(platform.warmupService[method]).toHaveBeenCalledWith(args);
     }
   );
+
+  it.each([
+    {
+      state: CharacteristicMock.TargetHeatingCoolingState.AUTO,
+      method: 'deviceOverrideCancel',
+      expected: 17.5,
+    },
+    {
+      state: CharacteristicMock.TargetHeatingCoolingState.AUTO,
+      method: 'deviceOverrideCancel',
+      expected: 18.5,
+    },
+    {
+      state: CharacteristicMock.TargetHeatingCoolingState.AUTO,
+      method: 'deviceOverrideCancel',
+      expected: 19.5,
+    },
+  ])(
+    'should update the target temperature $expected when run mode is $runMode',
+    async ({ state, method, expected }) => {
+      // Arrange
+      const { TargetHeatingCoolingState, TargetTemperature } = platform.Characteristic;
+      jest.spyOn(platform.warmupService, 'getDevice').mockResolvedValue({
+        data: { user: { owned: [{ room: { ...BATHROOM_DEVICE, targetTemp: expected * 10 } }] } },
+      });
+      jest.spyOn(platform.warmupService, method).mockResolvedValue();
+      const accessory = api.platformAccessory({
+        ...BATHROOM_ACCESSORY,
+        context: {
+          userId: USER_ID,
+          locationId: LOCATION_ID,
+          device: { ...BATHROOM_DEVICE, targetTemp: expected * 10 },
+        },
+      });
+      const thermostat = new WarmupPlatformAccessory(platform, accessory);
+      platform.warmupService.token = 'logged in';
+
+      // Act
+      await thermostat.service.getCharacteristic(TargetHeatingCoolingState).emit('set', state);
+
+      // Assert
+      expect(TargetTemperature.updateValue).toHaveBeenCalledWith(expected);
+    }
+  );
 });
 
 describe('TemperatureDisplayUnits', () => {
@@ -404,6 +448,7 @@ describe('TargetTemperature', () => {
       maxValue: 30,
     });
   });
+
   it.each([
     { runModeInt: RunMode.OFF, runMode: 'off', overrideTemp: 250, targetTemp: 230, expected: 23 },
     { runModeInt: RunMode.SCHEDULE, runMode: 'schedule', overrideTemp: 250, targetTemp: 230, expected: 23 },
@@ -470,6 +515,48 @@ describe('TargetTemperature', () => {
     // Assert
     expect(platform.warmupService[method]).toHaveBeenCalledWith(args);
   });
+
+  it.each([
+    {
+      runModeInt: RunMode.SCHEDULE,
+      runMode: 'schedule',
+      method: 'deviceOverride',
+      temperature: 19.5,
+    },
+    {
+      runModeInt: RunMode.OVERRIDE,
+      runMode: 'override',
+      method: 'deviceOverride',
+      temperature: 19.5,
+    },
+  ])(
+    'should update the target heating cooling state to HEAT when run mode is $runMode',
+    async ({ runModeInt, runMode, method, temperature }) => {
+      // Arrange
+      const { TargetHeatingCoolingState, TargetTemperature } = platform.Characteristic;
+
+      jest.spyOn(platform.warmupService, 'getDevice').mockResolvedValue({
+        data: { user: { owned: [{ room: { ...BATHROOM_DEVICE, runModeInt, runMode } }] } },
+      });
+      jest.spyOn(platform.warmupService, method).mockResolvedValue();
+      const accessory = api.platformAccessory({
+        ...BATHROOM_ACCESSORY,
+        context: {
+          userId: USER_ID,
+          locationId: LOCATION_ID,
+          device: { ...BATHROOM_DEVICE, runModeInt, runMode },
+        },
+      });
+      const thermostat = new WarmupPlatformAccessory(platform, accessory);
+      platform.warmupService.token = 'logged in';
+
+      // Act
+      await thermostat.service.getCharacteristic(TargetTemperature).emit('set', temperature);
+
+      // Assert
+      expect(TargetHeatingCoolingState.updateValue).toHaveBeenCalledWith(TargetHeatingCoolingState.HEAT);
+    }
+  );
 
   it.each([
     {
