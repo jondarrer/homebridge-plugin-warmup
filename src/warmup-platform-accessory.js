@@ -346,7 +346,7 @@ export class WarmupPlatformAccessory {
     const {
       context: {
         locationId,
-        device: { id, roomName, runMode },
+        device: { id, roomName, runModeInt, runMode },
       },
     } = this.accessory;
 
@@ -354,9 +354,9 @@ export class WarmupPlatformAccessory {
 
     const { TargetHeatingCoolingState } = this.platform.Characteristic;
 
-    switch (runMode) {
-      case 'schedule':
-      case 'override':
+    switch (runModeInt) {
+      case RunMode.SCHEDULE:
+      case RunMode.OVERRIDE:
         await this.platform.warmupService.deviceOverride({
           locationId: locationId,
           roomId: id,
@@ -376,8 +376,8 @@ export class WarmupPlatformAccessory {
         );
 
         break;
-      case 'off':
-      case 'fixed':
+      case RunMode.OFF:
+      case RunMode.FIXED:
       default:
         // runMode === 'off' || runMode === 'fixed'
 
