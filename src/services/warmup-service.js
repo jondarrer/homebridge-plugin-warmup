@@ -64,7 +64,7 @@ export class WarmupService {
       variables: null,
     };
 
-    this.log(`Querying GQL endpoint with ${JSON.stringify(query)}`);
+    this.log.debug(`Querying GQL endpoint with ${JSON.stringify(query)}`);
 
     const result = await makeGQLQuery(query, this.token);
     return result;
@@ -84,7 +84,7 @@ export class WarmupService {
       variables: { locationId, roomId },
     };
 
-    this.log(`Querying GQL endpoint with ${JSON.stringify(query)}`);
+    this.log.debug(`Querying GQL endpoint with ${JSON.stringify(query)}`);
 
     return await makeGQLQuery(query, this.token);
   }
@@ -102,7 +102,7 @@ export class WarmupService {
       variables: { locationId, roomId, temperature, minutes },
     };
 
-    this.log(`Querying GQL endpoint with ${JSON.stringify(query)}`);
+    this.log.debug(`Querying GQL endpoint with ${JSON.stringify(query)}`);
 
     return await makeGQLQuery(query, this.token);
   }
@@ -120,7 +120,7 @@ export class WarmupService {
       variables: { locationId, roomId },
     };
 
-    this.log(`Querying GQL endpoint with ${JSON.stringify(query)}`);
+    this.log.debug(`Querying GQL endpoint with ${JSON.stringify(query)}`);
 
     return await makeGQLQuery(query, this.token);
   }
@@ -138,7 +138,7 @@ export class WarmupService {
       variables: { locationId, roomId },
     };
 
-    this.log(`Querying GQL endpoint with ${JSON.stringify(query)}`);
+    this.log.debug(`Querying GQL endpoint with ${JSON.stringify(query)}`);
 
     return await makeGQLQuery(query, this.token);
   }
@@ -156,7 +156,7 @@ export class WarmupService {
       variables: { locationId, roomId },
     };
 
-    this.log(`Querying GQL endpoint with ${JSON.stringify(query)}`);
+    this.log.debug(`Querying GQL endpoint with ${JSON.stringify(query)}`);
 
     return await makeGQLQuery(query, this.token);
   }
