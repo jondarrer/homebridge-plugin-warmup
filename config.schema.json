@@ -1,0 +1,17 @@
+{
+  "pluginAlias": "HomebridgePluginWarmup",
+  "pluginType": "platform",
+  "singular": true,
+  "customUi": true,
+  "customUiPath": "./dist/homebridge-ui",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "token": {
+        "title": "Token",
+        "type": "string",
+        "required": true
+      }
+    }
+  }
+}
