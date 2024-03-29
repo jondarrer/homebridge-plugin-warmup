@@ -1,45 +1,12 @@
-<div class="card card-body">
-  <pre style="color: #f55; font-size: 0.5em;">
-*###.   :###    -###################################################################:
-.###=   *###=   *##=
- +##*  .#####  .### .+*####*=   :+####* =*######+:+#####=   =###   :##*  -*#####*=
- .###. =##+##- =##+  :    :###  =###    ###*   *###   +###. +###   :###  +##+  .###+
-  +##= ##=.##+ ###.    .-=+###: =###    ###*   -###   :###: +###   :###  +##+   .###:
-  :###+##  +##+##*  +###.  ###: =###    ###*   -###   :###: +###   :###  +##+    ###-
-   #####-   #####. :###    ###: =###    ###*   -###   :###: +###   :###  +##+   -###
-   -####    =###*   ####:.:###: =###    ###*   -###   :###:  ####**####  +###==*###  
-    ---:     ---.     :=++==-   .---    ---:   .---    ---    .-=++==:   +###===-
-                                                                         +##+
-                                                                         +##+    ..  
-  </pre>
-  <form id="loginForm" class="d-none">
-    <div class="form-group">
-      <label for="email">Email</label>
-      <input type="text" class="form-control" id="email" required />
-    </div>
-    <div class="form-group">
-      <label for="password">Password</label>
-      <input type="password" class="form-control" id="password" required />
-    </div>
-    <div class="text-center">
-      <button id="loginButton" type="button" class="btn btn-primary">Login</button>
-    </div>
-  </form>
-  <form id="logoutForm" class="d-none">
-    <div class="text-center">
-      <button id="logoutButton" type="button" class="btn btn-primary">Logout</button>
-    </div>
-  </form>
-</div>
+console.debug('CommonJS environment');
 
-<script>
 /**
  *
  * @param {window.Document} document
  * @param {HomebridgePluginUi} homebridge
  */
 const configUI = async (document, homebridge) => {
-  console.debug('configUI-HTML');
+  console.debug('configUI-JS');
 
   // get the initial config - this is an array potentially containing multiple config blocks
   const pluginConfig = await homebridge.getPluginConfig();
@@ -48,20 +15,21 @@ const configUI = async (document, homebridge) => {
 
   // watch for click events on the loginButton
   document
-    .getElementById('loginButton')
+    .querySelector('#loginButton')
     .addEventListener('click', () => handleLoginClick(document, homebridge, pluginConfig));
 
   // watch for click events on the logoutButton
   document
-    .getElementById('logoutButton')
+    .querySelector('#logoutButton')
     .addEventListener('click', () => handleLogoutClick(document, homebridge, pluginConfig));
 };
 
 const initialiseForm = (pluginConfig) => {
-  console.debug('initialiseForm', pluginConfig);
+  console.debug('initialiseForm', pluginConfig, pluginConfig.length && pluginConfig[0].token);
   // determine which form to show, either login or logout
   if (pluginConfig.length && pluginConfig[0].token) {
-    console.debug('initialiseForm', 'Found token, showing logout form');
+    console.debug('initialiseForm', 'Found token:', pluginConfig[0].token);
+    document.querySelector('#token').value = pluginConfig[0].token;
 
     if (document.getElementById('logoutForm').classList.contains('d-none')) {
       document.getElementById('logoutForm').classList.remove('d-none');
@@ -70,22 +38,20 @@ const initialiseForm = (pluginConfig) => {
       document.getElementById('loginForm').classList.add('d-none');
     }
   } else {
-    console.debug('initialiseForm', 'No token found, showing login form');
+    console.debug('initialiseForm', 'No token found');
     pluginConfig.push({});
 
     if (document.getElementById('loginForm').classList.contains('d-none')) {
       document.getElementById('loginForm').classList.remove('d-none');
     }
-    if (!document.getElementById('logoutForm').classList.contains('d-none')) {
-      document.getElementById('logoutForm').classList.add('d-none');
-    }
   }
+  console.debug('initialiseForm', 'Finished');
 };
 
 const handleLoginClick = async (document, homebridge, pluginConfig) => {
   // validate a username was provided
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
+  const email = document.querySelector('#email').value;
+  const password = document.querySelector('#password').value;
 
   if (!email) {
     // create a error / red toast notification if the required input is not provided.
@@ -108,19 +74,13 @@ const handleLoginClick = async (document, homebridge, pluginConfig) => {
       email,
       password,
     });
-    console.debug({response});
 
-    if (!response) {
-      throw new Error('No response');
-    }
-
-    if (response.error) {
-      throw new Error(response.error);
-    }
+    // update the token input with the response
+    document.querySelector('#token').value = response.token;
 
     // update the plugin config
     pluginConfig[0].token = response.token;
-    await homebridge.updatePluginConfig(pluginConfig);
+    homebridge.updatePluginConfig(pluginConfig);
 
     if (document.getElementById('logoutForm').classList.contains('d-none')) {
       document.getElementById('logoutForm').classList.remove('d-none');
@@ -145,10 +105,12 @@ const handleLogoutClick = async (document, homebridge, pluginConfig) => {
 
   // request a token from the server
   try {
+    // update the token input with null
+    document.querySelector('#token').value = null;
 
     // update the plugin config with null
     pluginConfig[0].token = null;
-    await homebridge.updatePluginConfig(pluginConfig);
+    homebridge.updatePluginConfig(pluginConfig);
 
     if (document.getElementById('loginForm').classList.contains('d-none')) {
       document.getElementById('loginForm').classList.remove('d-none');
@@ -167,10 +129,19 @@ const handleLogoutClick = async (document, homebridge, pluginConfig) => {
   }
 };
 
-(async () => {
-
 // Check for CommonJS environment (like Node.js)
-if (typeof window !== 'undefined' && window.document) {
+if (typeof module !== 'undefined' && module.exports) {
+  console.debug('CommonJS environment');
+
+  // CommonJS environment
+  // Export functions using module.exports
+  module.exports = {
+    configUI,
+    initialiseForm,
+    handleLoginClick,
+    handleLogoutClick,
+  };
+} else if (typeof window !== 'undefined' && window.document) {
   // Browser environment
 
   // Ensure we have homebridge too
@@ -181,6 +152,3 @@ if (typeof window !== 'undefined' && window.document) {
   // Fallback for unknown environments
   console.error('Unsupported environment: No support for commonjs or window');
 }
-})();
-
-</script>
