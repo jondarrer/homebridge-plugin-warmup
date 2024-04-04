@@ -16,7 +16,7 @@
 
 ## Introduction <!-- omit in toc -->
 
-Unofficial [Homebridge](https://homebridge.io) plugin exposing to Apple's [HomeKit](http://www.apple.com/ios/home/) [Warmup smart thermostats](https://www.warmup.co.uk/thermostats/smart). NB. Currently, only the [4iE](https://www.warmup.co.uk/thermostats/smart/4ie-underfloor-heating) is known to work.
+Unofficial [Homebridge](https://homebridge.io) plugin exposing [Warmup smart thermostats](https://www.warmup.co.uk/thermostats/smart) to Apple's [HomeKit](http://www.apple.com/ios/home/). NB. Currently, only the [4iE](https://www.warmup.co.uk/thermostats/smart/4ie-underfloor-heating) is known to work. If you have another model, like perhaps the [6iE](https://www.warmup.co.uk/thermostats/smart/6ie-underfloor-heating), please let me know.
 
 Warmup Homebridge Plugin automatically discovers your Warmup thermostats.
 
