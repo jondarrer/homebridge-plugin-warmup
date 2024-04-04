@@ -2,7 +2,7 @@
   "private": false,
   "name": "homebridge-plugin-warmup",
   "version": "0.0.24",
-  "description": "My very first Homebridge plugin to help me learn about Homebridge plugins",
+  "description": "Unofficial Homebridge plugin exposing Warmup smart thermostats to Apple's HomeKit",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -27,8 +27,8 @@
   },
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@homebridge/plugin-ui-utils": "^1.0.1",
-    "warmup-api": "^1.0.0"
+    "@homebridge/plugin-ui-utils": "^1.0.2",
+    "warmup-api": "^1.1.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
