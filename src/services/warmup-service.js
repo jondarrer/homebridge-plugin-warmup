@@ -21,7 +21,8 @@ export class WarmupService {
 
   /**
    *
-   * @param {string} token
+   * @param {any} log
+   * @param {string} [token]
    */
   constructor(log, token) {
     this.log = log;
@@ -34,7 +35,7 @@ export class WarmupService {
    * @param {string} password
    */
   async login(email, password) {
-    this.token = getToken(email, password);
+    this.token = await getToken(email, password);
   }
 
   /**
@@ -128,7 +129,7 @@ export class WarmupService {
   /**
    *
    * @param {{locationId: number, roomId: [number] }} params
-   * @returns {Promise<boolean>}
+   * @returns {Promise<any>}
    */
   async deviceSchedule({ locationId, roomId }) {
     assert(this.token, 'Login before scheduling a device');
@@ -146,7 +147,7 @@ export class WarmupService {
   /**
    *
    * @param {{locationId: number, roomId: [number] }} params
-   * @returns {Promise<boolean>}
+   * @returns {Promise<any>}
    */
   async deviceOff({ locationId, roomId }) {
     assert(this.token, 'Login before turning off a device');

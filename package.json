@@ -12,11 +12,11 @@
     "url": "https://github.com/jondarrer/my-first-homebridge-plugin/issues"
   },
   "type": "module",
-  "main": "src/index.js",
-  "module": "src/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "scripts": {
     "build": "rimraf ./dist && npm run copy-files",
-    "copy-files": "copyfiles -u 1 src/homebridge-ui/** dist/ && copyfiles -u 1 src/homebridge-ui/**/* dist/",
+    "copy-files": "copyfiles --exclude \"**/*.spec.js\" --exclude \"**/mocks/*\" -u 1 src/* src/**/* dist/",
     "lint": "eslint src/**.js --max-warnings=0",
     "lint-staged": "lint-staged",
     "local-homebridge": "npx homebridge -D -U ./.homebridge-dev",
@@ -25,10 +25,9 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "watch": "npm run build && npm link && nodemon"
   },
-  "types": "./dist/index.d.ts",
   "dependencies": {
     "@homebridge/plugin-ui-utils": "^1.0.2",
-    "warmup-api": "^1.1.0"
+    "warmup-api": "^1.1.1"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",

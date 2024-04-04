@@ -154,7 +154,7 @@ export class WarmupThermostatAccessory {
 
   /**
    *
-   * @returns {Promise<Promise<import('homebridge').CharacteristicValue>}
+   * @returns {Promise<import('homebridge').CharacteristicValue>}
    */
   async getTargetHeatingCoolingState() {
     this.platform.log.debug(`[${this.accessory.context.device.roomName}] TargetHeatingCoolingState begin reading`);
@@ -187,7 +187,7 @@ export class WarmupThermostatAccessory {
 
   /**
    *
-   * @param {Promise<import('homebridge').CharacteristicValue} value
+   * @param {import('homebridge').CharacteristicValue} value
    */
   async setTargetHeatingCoolingState(value) {
     const {
@@ -228,12 +228,12 @@ export class WarmupThermostatAccessory {
         } else {
           // runMode === 'override' || runMode === 'schedule' || runMode === 'off'
 
-          const targetTemperature = this.service.getCharacteristic(TargetTemperature).value;
+          const targetTemperature = /** @type {number} */ this.service.getCharacteristic(TargetTemperature).value;
 
           await this.platform.warmupService.deviceOverride({
             locationId: locationId,
             roomId: id,
-            temperature: targetTemperature * 10,
+            temperature: /** @type {any} */ (targetTemperature) * 10,
             minutes: 60,
           });
 
@@ -273,7 +273,7 @@ export class WarmupThermostatAccessory {
 
   /**
    *
-   * @returns {Promise<Promise<import('homebridge').CharacteristicValue>}
+   * @returns {Promise<import('homebridge').CharacteristicValue>}
    */
   async getTemperatureDisplayUnits() {
     const {
@@ -293,7 +293,7 @@ export class WarmupThermostatAccessory {
 
   /**
    *
-   * @param {Promise<import('homebridge').CharacteristicValue} value
+   * @param {Promise<import('homebridge').CharacteristicValue>} value
    */
   async setTemperatureDisplayUnits(value) {
     const {
@@ -309,7 +309,7 @@ export class WarmupThermostatAccessory {
 
   /**
    *
-   * @returns {Promise<Promise<import('homebridge').CharacteristicValue>}
+   * @returns {Promise<import('homebridge').CharacteristicValue>}
    */
   async getTargetTemperature() {
     this.platform.log.debug(`[${this.accessory.context.device.roomName}] TargetTemperature begin reading`);
@@ -340,7 +340,7 @@ export class WarmupThermostatAccessory {
 
   /**
    *
-   * @param {Promise<import('homebridge').CharacteristicValue} value
+   * @param {Promise<import('homebridge').CharacteristicValue>} value
    */
   async setTargetTemperature(value) {
     const {
@@ -360,7 +360,7 @@ export class WarmupThermostatAccessory {
         await this.platform.warmupService.deviceOverride({
           locationId: locationId,
           roomId: id,
-          temperature: value * 10,
+          temperature: /** @type {any} */ (value) * 10,
           minutes: 60,
         });
 
@@ -393,7 +393,7 @@ export class WarmupThermostatAccessory {
 
   /**
    *
-   * @returns {Promise<Promise<import('homebridge').CharacteristicValue>}
+   * @returns {Promise<import('homebridge').CharacteristicValue>}
    */
   async getCurrentTemperature() {
     this.platform.log.debug(`[${this.accessory.context.device.roomName}] CurrentTemperature begin reading`);

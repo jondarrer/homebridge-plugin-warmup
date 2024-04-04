@@ -2,11 +2,16 @@ import { PLATFORM_NAME, PLUGIN_NAME } from './settings.js';
 import { WarmupThermostatAccessory } from './warmup-thermostat-accessory.js';
 import { WarmupService } from './services/index.js';
 
+// See https://github.com/microsoft/TypeScript/issues/49905 for why we want
+// this typedef here, and not directly use the import in the implements
+// section
+/** @typedef {import('homebridge').DynamicPlatformPlugin} DynamicPlatformPlugin */
+
 /**
  * HomebridgePlatform
  * This class is the main constructor for your plugin, this is where you should
  * parse the user config and discover/register accessories with Homebridge.
- * @implements {import('homebridge').DynamicPlatformPlugin}
+ * @implements {DynamicPlatformPlugin}
  */
 export class WarmupHomebridgePlatform {
   /**
@@ -23,11 +28,6 @@ export class WarmupHomebridgePlatform {
    * @type {typeof import('homebridge').Characteristic}
    */
   Characteristic;
-
-  /**
-   * @type {typeof import('homebridge').Characteristic}
-   */
-  Categories;
 
   /**
    * this is used to track restored cached accessories
@@ -47,7 +47,6 @@ export class WarmupHomebridgePlatform {
     this.api = api;
     this.Service = this.api.hap.Service;
     this.Characteristic = this.api.hap.Characteristic;
-    this.Categories = this.api.hap.Categories;
 
     this.warmupService = new WarmupService(this.log, this.config.token);
     this.log.debug('Finished initializing platform:', this.config.name);
@@ -126,7 +125,7 @@ export class WarmupHomebridgePlatform {
           this.log.info('Adding new accessory:', device.roomName);
 
           // create a new accessory
-          const accessory = new this.api.platformAccessory(device.roomName, uuid, this.Categories.THERMOSTAT);
+          const accessory = new this.api.platformAccessory(device.roomName, uuid, this.api.hap.Categories.THERMOSTAT);
 
           // store a copy of the device object in the `accessory.context`
           // the `context` property can be used to store any data about the accessory you may need
