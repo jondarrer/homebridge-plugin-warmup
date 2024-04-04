@@ -1,5 +1,5 @@
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings.js';
-import { WarmupPlatformAccessory } from './warmup-platform-accessory.js';
+import { WarmupThermostatAccessory } from './warmup-thermostat-accessory.js';
 import { WarmupService } from './services/index.js';
 
 /**
@@ -101,7 +101,7 @@ export class WarmupHomebridgePlatform {
         // generate a unique id for the accessory this should be generated from
         // something globally unique, but constant, for example, the device serial
         // number or MAC address
-        const deviceSN = WarmupPlatformAccessory.buildSerialNumber(userId, locationId, device.id);
+        const deviceSN = WarmupThermostatAccessory.buildSerialNumber(userId, locationId, device.id);
         const uuid = this.api.hap.uuid.generate(deviceSN);
 
         this.log.debug(`Processing device ${device.roomName} with serial number ${deviceSN}.`);
@@ -120,7 +120,7 @@ export class WarmupHomebridgePlatform {
 
           // create the accessory handler for the restored accessory
           // this is imported from `platformAccessory.ts`
-          new WarmupPlatformAccessory(this, existingAccessory);
+          new WarmupThermostatAccessory(this, existingAccessory);
         } else {
           // the accessory does not yet exist, so we need to create it
           this.log.info('Adding new accessory:', device.roomName);
@@ -135,7 +135,7 @@ export class WarmupHomebridgePlatform {
 
           // create the accessory handler for the newly create accessory
           // this is imported from `platformAccessory.ts`
-          new WarmupPlatformAccessory(this, accessory);
+          new WarmupThermostatAccessory(this, accessory);
 
           // link the accessory to your platform
           this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
@@ -151,8 +151,8 @@ export class WarmupHomebridgePlatform {
         if (
           !location.rooms.find(
             (device) =>
-              WarmupPlatformAccessory.buildSerialNumber(userId, locationId, device.id) ===
-              WarmupPlatformAccessory.buildSerialNumber(
+              WarmupThermostatAccessory.buildSerialNumber(userId, locationId, device.id) ===
+              WarmupThermostatAccessory.buildSerialNumber(
                 existingAccessory.context.userId,
                 existingAccessory.context.locationId,
                 existingAccessory.context.device.id

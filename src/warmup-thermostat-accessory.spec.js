@@ -6,7 +6,7 @@ import { PLUGIN_NAME, PLATFORM_NAME } from './settings.js';
 import { RunMode } from './enums.js';
 import { WarmupService } from './services/index.js';
 import { WarmupHomebridgePlatform } from './warmup-homebridge-platform.js';
-import { WarmupPlatformAccessory } from './warmup-platform-accessory.js';
+import { WarmupThermostatAccessory } from './warmup-thermostat-accessory.js';
 
 let log;
 let config;
@@ -96,7 +96,7 @@ it('should initialise without throwing', () => {
   const accessory = api.platformAccessory(BATHROOM_ACCESSORY);
 
   // Act & Assert
-  expect(() => new WarmupPlatformAccessory(platform, accessory)).not.toThrow();
+  expect(() => new WarmupThermostatAccessory(platform, accessory)).not.toThrow();
 });
 
 describe('CurrentHeatingCoolingState', () => {
@@ -138,7 +138,7 @@ describe('CurrentHeatingCoolingState', () => {
       data: { user: { owned: [{ room: { ...BATHROOM_DEVICE, runModeInt, runMode } }] } },
     });
     const accessory = api.platformAccessory(BATHROOM_ACCESSORY);
-    const thermostat = new WarmupPlatformAccessory(platform, accessory);
+    const thermostat = new WarmupThermostatAccessory(platform, accessory);
 
     // Act
     const result = await thermostat.service.getCharacteristic(CurrentHeatingCoolingState).emit('get');
@@ -155,7 +155,7 @@ describe('TargetHeatingCoolingState', () => {
     const accessory = api.platformAccessory(BATHROOM_ACCESSORY);
 
     // Act
-    new WarmupPlatformAccessory(platform, accessory);
+    new WarmupThermostatAccessory(platform, accessory);
 
     // Assert
     expect(TargetHeatingCoolingState.setProps).toHaveBeenCalledWith({
@@ -209,7 +209,7 @@ describe('TargetHeatingCoolingState', () => {
       });
 
       // Act
-      new WarmupPlatformAccessory(platform, accessory);
+      new WarmupThermostatAccessory(platform, accessory);
 
       // Assert
       expect(TargetHeatingCoolingState.updateValue).toHaveBeenCalledWith(expected);
@@ -254,7 +254,7 @@ describe('TargetHeatingCoolingState', () => {
       data: { user: { owned: [{ room: { ...BATHROOM_DEVICE, runModeInt, runMode } }] } },
     });
     const accessory = api.platformAccessory(BATHROOM_ACCESSORY);
-    const thermostat = new WarmupPlatformAccessory(platform, accessory);
+    const thermostat = new WarmupThermostatAccessory(platform, accessory);
 
     // Act
     const result = await thermostat.service.getCharacteristic(TargetHeatingCoolingState).emit('get');
@@ -309,7 +309,7 @@ describe('TargetHeatingCoolingState', () => {
         TargetTemperature.value = args.temperature / 10;
       }
       const accessory = api.platformAccessory(BATHROOM_ACCESSORY);
-      const thermostat = new WarmupPlatformAccessory(platform, accessory);
+      const thermostat = new WarmupThermostatAccessory(platform, accessory);
       platform.warmupService.token = 'logged in';
 
       // Act
@@ -353,7 +353,7 @@ describe('TargetHeatingCoolingState', () => {
           device: { ...BATHROOM_DEVICE, targetTemp: expected * 10 },
         },
       });
-      const thermostat = new WarmupPlatformAccessory(platform, accessory);
+      const thermostat = new WarmupThermostatAccessory(platform, accessory);
       platform.warmupService.token = 'logged in';
 
       // Act
@@ -372,7 +372,7 @@ describe('TemperatureDisplayUnits', () => {
     const accessory = api.platformAccessory(BATHROOM_ACCESSORY);
 
     // Act
-    new WarmupPlatformAccessory(platform, accessory);
+    new WarmupThermostatAccessory(platform, accessory);
 
     // Assert
     expect(TemperatureDisplayUnits.setProps).toHaveBeenCalledWith({
@@ -386,7 +386,7 @@ describe('TemperatureDisplayUnits', () => {
       .fn(WarmupService.prototype, 'getDevice')
       .mockResolvedValue({ data: { user: { owned: [{ room: { BATHROOM_DEVICE } }] } } });
     const accessory = api.platformAccessory(BATHROOM_ACCESSORY);
-    const thermostat = new WarmupPlatformAccessory(platform, accessory);
+    const thermostat = new WarmupThermostatAccessory(platform, accessory);
 
     // Act
     const result = await thermostat.service.getCharacteristic(TemperatureDisplayUnits).emit('get');
@@ -402,7 +402,7 @@ describe('TemperatureDisplayUnits', () => {
       .fn(platform.warmupService, 'getDevice')
       .mockResolvedValue({ data: { user: { owned: [{ room: { BATHROOM_DEVICE } }] } } });
     const accessory = api.platformAccessory(BATHROOM_ACCESSORY);
-    const thermostat = new WarmupPlatformAccessory(platform, accessory);
+    const thermostat = new WarmupThermostatAccessory(platform, accessory);
     platform.warmupService.token = 'logged in';
 
     // Act & Assert
@@ -428,7 +428,7 @@ describe('TargetTemperature', () => {
     });
 
     // Act
-    new WarmupPlatformAccessory(platform, accessory);
+    new WarmupThermostatAccessory(platform, accessory);
 
     // Assert
     expect(TargetTemperature.updateValue).toHaveBeenCalledWith(targetTemp / 10);
@@ -440,7 +440,7 @@ describe('TargetTemperature', () => {
     const accessory = api.platformAccessory(BATHROOM_ACCESSORY);
 
     // Act
-    new WarmupPlatformAccessory(platform, accessory);
+    new WarmupThermostatAccessory(platform, accessory);
 
     // Assert
     expect(TargetTemperature.setProps).toHaveBeenCalledWith({
@@ -468,7 +468,7 @@ describe('TargetTemperature', () => {
         },
       });
       const accessory = api.platformAccessory(BATHROOM_ACCESSORY);
-      const thermostat = new WarmupPlatformAccessory(platform, accessory);
+      const thermostat = new WarmupThermostatAccessory(platform, accessory);
 
       // Act
       const result = await thermostat.service.getCharacteristic(TargetTemperature).emit('get');
@@ -506,7 +506,7 @@ describe('TargetTemperature', () => {
         device: { ...BATHROOM_DEVICE, runModeInt, runMode },
       },
     });
-    const thermostat = new WarmupPlatformAccessory(platform, accessory);
+    const thermostat = new WarmupThermostatAccessory(platform, accessory);
     platform.warmupService.token = 'logged in';
 
     // Act
@@ -547,7 +547,7 @@ describe('TargetTemperature', () => {
           device: { ...BATHROOM_DEVICE, runModeInt, runMode },
         },
       });
-      const thermostat = new WarmupPlatformAccessory(platform, accessory);
+      const thermostat = new WarmupThermostatAccessory(platform, accessory);
       platform.warmupService.token = 'logged in';
 
       // Act
@@ -591,7 +591,7 @@ describe('TargetTemperature', () => {
     });
     jest.spyOn(platform.warmupService, method).mockResolvedValue(true);
     const accessory = api.platformAccessory(BATHROOM_ACCESSORY);
-    const thermostat = new WarmupPlatformAccessory(platform, accessory);
+    const thermostat = new WarmupThermostatAccessory(platform, accessory);
     platform.warmupService.token = 'logged in';
 
     // Act & Assert
@@ -617,7 +617,7 @@ describe('CurrentTemperature', () => {
     });
 
     // Act
-    new WarmupPlatformAccessory(platform, accessory);
+    new WarmupThermostatAccessory(platform, accessory);
 
     // Assert
     expect(CurrentTemperature.updateValue).toHaveBeenCalledWith(currentTemp / 10);
@@ -630,7 +630,7 @@ describe('CurrentTemperature', () => {
       data: { user: { owned: [{ room: { ...BATHROOM_DEVICE, currentTemp } }] } },
     });
     const accessory = api.platformAccessory(BATHROOM_ACCESSORY);
-    const thermostat = new WarmupPlatformAccessory(platform, accessory);
+    const thermostat = new WarmupThermostatAccessory(platform, accessory);
 
     // Act
     const result = await thermostat.service.getCharacteristic(CurrentTemperature).emit('get');

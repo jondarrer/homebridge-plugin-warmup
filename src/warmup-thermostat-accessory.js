@@ -5,7 +5,7 @@ import { RunMode } from './enums.js';
  * An instance of this class is created for each accessory your platform registers
  * Each accessory may expose multiple services of different service types.
  */
-export class WarmupPlatformAccessory {
+export class WarmupThermostatAccessory {
   /**
    *
    * @param {number} userId
@@ -35,7 +35,7 @@ export class WarmupPlatformAccessory {
       context: { userId, locationId, device },
     } = accessory;
 
-    const deviceSN = WarmupPlatformAccessory.buildSerialNumber(userId, locationId, device.id);
+    const deviceSN = WarmupThermostatAccessory.buildSerialNumber(userId, locationId, device.id);
 
     const {
       Manufacturer,
