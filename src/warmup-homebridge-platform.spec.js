@@ -82,6 +82,7 @@ beforeEach(() => {
   config = {
     name: PLUGIN_NAME,
     platform: PLATFORM_NAME,
+    token: 'some-valid-token',
   };
   api = new HomebridgeMock();
   jest.restoreAllMocks();
