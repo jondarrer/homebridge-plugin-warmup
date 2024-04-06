@@ -17,6 +17,7 @@ jest.config.js
 
 # Homebridge
 .homebridge-dev/
+volumes/
 
 # Husky
 .husky
