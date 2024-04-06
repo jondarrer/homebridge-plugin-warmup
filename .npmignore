@@ -28,6 +28,10 @@ volumes/
 # javascript config
 jsconfig.json
 
+# Docker
+docker-compose.yml
+scripts/
+
 # vscode
 .vscode
 
