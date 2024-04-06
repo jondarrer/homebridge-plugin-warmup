@@ -16,7 +16,8 @@
   "module": "dist/index.js",
   "scripts": {
     "build": "rimraf ./dist && npm run copy-files",
-    "copy-files": "copyfiles --exclude \"**/*.spec.js\" --exclude \"**/mocks/*\" -u 1 src/* src/**/* dist/",
+    "containerised-homebridge": "npm run build && ./scripts/init.sh && docker-compose up --build --detach",
+    "copy-files": "copyfiles --exclude \"**/*.spec.js\" --exclude \"**/mocks/*\" -u 1 src/* src/**/* src/**/**/* dist/",
     "lint": "eslint src/**.js --max-warnings=0",
     "lint-staged": "lint-staged",
     "local-homebridge": "npx homebridge -D -U ./.homebridge-dev",
@@ -27,7 +28,7 @@
   },
   "dependencies": {
     "@homebridge/plugin-ui-utils": "^1.0.2",
-    "warmup-api": "^1.1.1"
+    "warmup-api": "^1.1.3"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",

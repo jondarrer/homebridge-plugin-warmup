@@ -131,6 +131,7 @@ out
 .yarn/install-state.gz
 .pnp.*
 
-# homebridge
+# homebridge container
 .homebridge-dev/accessories
 .homebridge-dev/persist
+volumes/

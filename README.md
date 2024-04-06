@@ -28,6 +28,7 @@ Warmup Homebridge Plugin automatically discovers your Warmup thermostats.
   - [Clone and install dependencies](#clone-and-install-dependencies)
   - [Testing](#testing)
   - [Building and publishing](#building-and-publishing)
+  - [Running Dockerised Homebridge for integration testing](#running-dockerised-homebridge-for-integration-testing)
 - [Credits](#credits)
 
 ## Using the plugin
@@ -93,6 +94,20 @@ npm run build
 npm version patch -m "%s"
 git push && git push --tags
 ```
+
+### Running Dockerised Homebridge for integration testing
+
+NB. Requires `docker-compose`.
+
+```sh
+npm run containerised-homebridge
+```
+
+This will build the plugin and copy the necessary files to the appropriate places within container volume space (`./volumes/homebridge`). It will then start it, making it available at [http://localhost:8581](http://localhost:8581).
+
+It is necessary to re-run this process on changes to the source code.
+
+To stop the container, simply run `docker-compose down`.
 
 ## Credits
 

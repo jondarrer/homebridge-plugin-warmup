@@ -1,5 +1,7 @@
 import { HomebridgePluginUiServer, RequestError } from '@homebridge/plugin-ui-utils';
-import { WarmupService } from '../../src/services/index.js';
+import { InvalidCredentialsError } from 'warmup-api';
+
+import { WarmupService } from '../services/index.js';
 
 class WarmupPluginUiServer extends HomebridgePluginUiServer {
   constructor() {
@@ -28,7 +30,11 @@ class WarmupPluginUiServer extends HomebridgePluginUiServer {
         token: this.warmupService.token,
       };
     } catch (e) {
-      throw new RequestError('Failed to get token', { message: this.getErrorMessage(e) });
+      console.error(e);
+      if (e instanceof InvalidCredentialsError) {
+        throw new RequestError('Invalid email/password combination');
+      }
+      throw new RequestError('Failed to get token', this.getErrorMessage(e));
     }
   }
 

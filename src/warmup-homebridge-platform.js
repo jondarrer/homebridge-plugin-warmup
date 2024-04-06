@@ -58,7 +58,13 @@ export class WarmupHomebridgePlatform {
     this.api.on('didFinishLaunching', async () => {
       this.log.debug('Executing didFinishLaunching callback');
 
-      await this.discoverDevices();
+      if (this.config.token) {
+        await this.discoverDevices();
+      } else {
+        this.log.info(
+          'No token available, doing nothing. Hint: Configure the plugin by logging in. Then restart Homebridge to complete plugin activation.'
+        );
+      }
     });
   }
 

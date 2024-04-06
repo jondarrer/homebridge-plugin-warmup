@@ -52,7 +52,7 @@
       <!-- https://icons.getbootstrap.com/icons/lock-fill/ -->
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lock-fill" viewBox="0 0 16 16">
         <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2m3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2"/>
-      </svg> You're currently logged in
+      </svg> <span>You're currently logged in.</span> <span id="saveHint" class="d-none">You must click Save to complete the process. Then restart Homebridge to activate the plugin.</span>
     </div>
     <div class="text-center">
       <button id="logoutButton" type="button" class="btn btn-primary">Logout</button>
@@ -105,7 +105,9 @@ const initialiseForm = (pluginConfig) => {
     }
   } else {
     console.debug('initialiseForm', 'No token found, showing login form');
-    pluginConfig.push({});
+    if (pluginConfig.length === 0) {
+      pluginConfig.push({ name: 'Warmup' });
+    }
 
     if (document.getElementById('loginForm').classList.contains('d-none')) {
       document.getElementById('loginForm').classList.remove('d-none');
@@ -159,6 +161,9 @@ const handleLoginClick = async (document, homebridge, pluginConfig) => {
     if (document.getElementById('logoutForm').classList.contains('d-none')) {
       document.getElementById('logoutForm').classList.remove('d-none');
     }
+    if (document.getElementById('saveHint').classList.contains('d-none')) {
+      document.getElementById('saveHint').classList.remove('d-none');
+    }
     if (!document.getElementById('loginForm').classList.contains('d-none')) {
       document.getElementById('loginForm').classList.add('d-none');
     }
@@ -166,6 +171,7 @@ const handleLoginClick = async (document, homebridge, pluginConfig) => {
     // show a success toast notification
     homebridge.toast.success('Logged in', 'Success');
   } catch (e) {
+    console.error(e);
     homebridge.toast.error(e.error, e.message);
   } finally {
     // remember to hide the spinner
