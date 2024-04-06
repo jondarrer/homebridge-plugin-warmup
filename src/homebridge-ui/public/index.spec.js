@@ -51,7 +51,7 @@ describe('Logged out', () => {
 
     // Assert
     expect(glob.homebridge.getPluginConfig).toHaveBeenCalled();
-    expect(pluginConfig.push).toHaveBeenCalledWith({});
+    expect(pluginConfig.push).toHaveBeenCalledWith({ name: 'Warmup' });
   });
 
   it('should validate the email field', async () => {
