@@ -5,6 +5,8 @@ import { HomebridgeMock, createLoggingMock } from './mocks/index.js';
 import { PLUGIN_NAME, PLATFORM_NAME } from './settings.js';
 import { WarmupService } from './services/index.js';
 import { WarmupHomebridgePlatform } from './warmup-homebridge-platform.js';
+import { WarmupThermostatAccessory } from './warmup-thermostat-accessory.js';
+import { WarmupTemperatureSensorAccessory } from './warmup-temperature-sensor-accessory.js';
 
 let log;
 let config;
@@ -41,6 +43,18 @@ const BATHROOM_ACCESSORY = {
   context: {
     userId: USER_ID,
     locationId: LOCATION_ID,
+    deviceType: WarmupThermostatAccessory.TYPE,
+    device: BATHROOM_DEVICE,
+  },
+};
+
+const BATHROOM_ACCESSORY_AIR = {
+  UUID: `UUID:${USER_ID}-${LOCATION_ID}-${BATHROOM_DEVICE.id}-air`,
+  displayName: 'BATHROOM_ACCESSORY',
+  context: {
+    userId: USER_ID,
+    locationId: LOCATION_ID,
+    deviceType: WarmupTemperatureSensorAccessory.TYPE,
     device: BATHROOM_DEVICE,
   },
 };
@@ -73,6 +87,18 @@ const KITCHEN_ACCESSORY = {
   context: {
     userId: USER_ID,
     locationId: LOCATION_ID,
+    deviceType: WarmupThermostatAccessory.TYPE,
+    device: KITCHEN_DEVICE,
+  },
+};
+
+const KITCHEN_ACCESSORY_AIR = {
+  UUID: `UUID:${USER_ID}-${LOCATION_ID}-${KITCHEN_DEVICE.id}-air`,
+  displayName: 'KITCHEN_ACCESSORY',
+  context: {
+    userId: USER_ID,
+    locationId: LOCATION_ID,
+    deviceType: WarmupTemperatureSensorAccessory.TYPE,
     device: KITCHEN_DEVICE,
   },
 };
@@ -105,7 +131,7 @@ describe('WarmupHomebridgePlatform', () => {
     await api.emit('didFinishLaunching');
 
     // Assert
-    expect(api.registerPlatformAccessories).toHaveBeenCalledTimes(2);
+    expect(api.registerPlatformAccessories).toHaveBeenCalledTimes(4);
     expect(api.registerPlatformAccessories).toHaveBeenCalledWith(
       PLUGIN_NAME,
       PLATFORM_NAME,
@@ -114,6 +140,7 @@ describe('WarmupHomebridgePlatform', () => {
           context: expect.objectContaining({
             userId: USER_ID,
             locationId: LOCATION_ID,
+            deviceType: WarmupThermostatAccessory.TYPE,
             device: expect.objectContaining({
               id: BATHROOM_DEVICE.id,
             }),
@@ -129,6 +156,39 @@ describe('WarmupHomebridgePlatform', () => {
           context: expect.objectContaining({
             userId: USER_ID,
             locationId: LOCATION_ID,
+            deviceType: WarmupThermostatAccessory.TYPE,
+            device: expect.objectContaining({
+              id: KITCHEN_DEVICE.id,
+            }),
+          }),
+        }),
+      ])
+    );
+    expect(api.registerPlatformAccessories).toHaveBeenCalledWith(
+      PLUGIN_NAME,
+      PLATFORM_NAME,
+      expect.arrayContaining([
+        expect.objectContaining({
+          context: expect.objectContaining({
+            userId: USER_ID,
+            locationId: LOCATION_ID,
+            deviceType: WarmupTemperatureSensorAccessory.TYPE,
+            device: expect.objectContaining({
+              id: BATHROOM_DEVICE.id,
+            }),
+          }),
+        }),
+      ])
+    );
+    expect(api.registerPlatformAccessories).toHaveBeenCalledWith(
+      PLUGIN_NAME,
+      PLATFORM_NAME,
+      expect.arrayContaining([
+        expect.objectContaining({
+          context: expect.objectContaining({
+            userId: USER_ID,
+            locationId: LOCATION_ID,
+            deviceType: WarmupTemperatureSensorAccessory.TYPE,
             device: expect.objectContaining({
               id: KITCHEN_DEVICE.id,
             }),
@@ -148,12 +208,16 @@ describe('WarmupHomebridgePlatform', () => {
     accessory.context.userId = USER_ID;
     accessory.context.locationId = LOCATION_ID;
     plugin.configureAccessory(accessory);
+    const accessoryAir = api.platformAccessory(BATHROOM_ACCESSORY_AIR);
+    accessoryAir.context.userId = USER_ID;
+    accessoryAir.context.locationId = LOCATION_ID;
+    plugin.configureAccessory(accessoryAir);
 
     // Act
     await api.emit('didFinishLaunching');
 
     // Assert
-    expect(api.registerPlatformAccessories).toHaveBeenCalledTimes(1);
+    expect(api.registerPlatformAccessories).toHaveBeenCalledTimes(2);
     expect(api.registerPlatformAccessories).toHaveBeenCalledWith(
       PLUGIN_NAME,
       PLATFORM_NAME,
@@ -162,6 +226,23 @@ describe('WarmupHomebridgePlatform', () => {
           context: expect.objectContaining({
             userId: USER_ID,
             locationId: LOCATION_ID,
+            deviceType: WarmupThermostatAccessory.TYPE,
+            device: expect.objectContaining({
+              id: KITCHEN_DEVICE.id,
+            }),
+          }),
+        }),
+      ])
+    );
+    expect(api.registerPlatformAccessories).toHaveBeenCalledWith(
+      PLUGIN_NAME,
+      PLATFORM_NAME,
+      expect.arrayContaining([
+        expect.objectContaining({
+          context: expect.objectContaining({
+            userId: USER_ID,
+            locationId: LOCATION_ID,
+            deviceType: WarmupTemperatureSensorAccessory.TYPE,
             device: expect.objectContaining({
               id: KITCHEN_DEVICE.id,
             }),
@@ -178,12 +259,13 @@ describe('WarmupHomebridgePlatform', () => {
       data: { user: { id: USER_ID, owned: [{ id: LOCATION_ID, rooms: [KITCHEN_DEVICE] }] } },
     });
     plugin.configureAccessory(api.platformAccessory(BATHROOM_ACCESSORY));
+    plugin.configureAccessory(api.platformAccessory(BATHROOM_ACCESSORY_AIR));
 
     // Act
     await api.emit('didFinishLaunching');
 
     // Assert
-    expect(api.unregisterPlatformAccessories).toHaveBeenCalledTimes(1);
+    expect(api.unregisterPlatformAccessories).toHaveBeenCalledTimes(2);
     expect(api.unregisterPlatformAccessories).toHaveBeenCalledWith(
       PLUGIN_NAME,
       PLATFORM_NAME,
@@ -192,6 +274,23 @@ describe('WarmupHomebridgePlatform', () => {
           context: expect.objectContaining({
             userId: USER_ID,
             locationId: LOCATION_ID,
+            deviceType: WarmupThermostatAccessory.TYPE,
+            device: expect.objectContaining({
+              id: BATHROOM_DEVICE.id,
+            }),
+          }),
+        }),
+      ])
+    );
+    expect(api.unregisterPlatformAccessories).toHaveBeenCalledWith(
+      PLUGIN_NAME,
+      PLATFORM_NAME,
+      expect.arrayContaining([
+        expect.objectContaining({
+          context: expect.objectContaining({
+            userId: USER_ID,
+            locationId: LOCATION_ID,
+            deviceType: WarmupTemperatureSensorAccessory.TYPE,
             device: expect.objectContaining({
               id: BATHROOM_DEVICE.id,
             }),

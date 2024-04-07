@@ -17,6 +17,8 @@ export class WarmupThermostatAccessory {
     return `${userId}-${locationId}-${deviceId}`;
   }
 
+  static TYPE = 'Thermostat';
+
   /**
    * @type {import('homebridge').Service}
    */

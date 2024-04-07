@@ -1,5 +1,6 @@
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings.js';
 import { WarmupThermostatAccessory } from './warmup-thermostat-accessory.js';
+import { WarmupTemperatureSensorAccessory } from './warmup-temperature-sensor-accessory.js';
 import { WarmupService } from './services/index.js';
 
 // See https://github.com/microsoft/TypeScript/issues/49905 for why we want
@@ -81,7 +82,7 @@ export class WarmupHomebridgePlatform {
   };
 
   /**
-   * Discover and register Warmup thermostats.
+   * Discover and register Warmup thermostats and temperature sensors.
    * Accessories must only be registered once, so previously created accessories
    * are not registered again to prevent "duplicate UUID" errors.
    */
@@ -103,48 +104,8 @@ export class WarmupHomebridgePlatform {
 
       // loop over the discovered devices and register each one if it has not already been registered
       for (const device of location.rooms) {
-        // generate a unique id for the accessory this should be generated from
-        // something globally unique, but constant, for example, the device serial
-        // number or MAC address
-        const deviceSN = WarmupThermostatAccessory.buildSerialNumber(userId, locationId, device.id);
-        const uuid = this.api.hap.uuid.generate(deviceSN);
-
-        this.log.debug(`Processing device ${device.roomName} with serial number ${deviceSN}.`);
-
-        // see if an accessory with the same uuid has already been registered and restored from
-        // the cached devices we stored in the `configureAccessory` method above
-        const existingAccessory = this.accessories.find((accessory) => accessory.UUID === uuid);
-
-        if (existingAccessory) {
-          // the accessory already exists
-          this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
-
-          existingAccessory.context = { userId, locationId };
-          existingAccessory.context.device = device;
-          this.api.updatePlatformAccessories([existingAccessory]);
-
-          // create the accessory handler for the restored accessory
-          // this is imported from `platformAccessory.ts`
-          new WarmupThermostatAccessory(this, existingAccessory);
-        } else {
-          // the accessory does not yet exist, so we need to create it
-          this.log.info('Adding new accessory:', device.roomName);
-
-          // create a new accessory
-          const accessory = new this.api.platformAccessory(device.roomName, uuid, this.api.hap.Categories.THERMOSTAT);
-
-          // store a copy of the device object in the `accessory.context`
-          // the `context` property can be used to store any data about the accessory you may need
-          accessory.context = { userId, locationId };
-          accessory.context.device = device;
-
-          // create the accessory handler for the newly create accessory
-          // this is imported from `platformAccessory.ts`
-          new WarmupThermostatAccessory(this, accessory);
-
-          // link the accessory to your platform
-          this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
-        }
+        this.updateOrRegisterDevice({ userId, locationId, device, Type: WarmupThermostatAccessory });
+        this.updateOrRegisterDevice({ userId, locationId, device, Type: WarmupTemperatureSensorAccessory });
       }
     }
 
@@ -157,11 +118,17 @@ export class WarmupHomebridgePlatform {
           !location.rooms.find(
             (device) =>
               WarmupThermostatAccessory.buildSerialNumber(userId, locationId, device.id) ===
-              WarmupThermostatAccessory.buildSerialNumber(
-                existingAccessory.context.userId,
-                existingAccessory.context.locationId,
-                existingAccessory.context.device.id
-              )
+                WarmupThermostatAccessory.buildSerialNumber(
+                  existingAccessory.context.userId,
+                  existingAccessory.context.locationId,
+                  existingAccessory.context.device.id
+                ) ||
+              WarmupTemperatureSensorAccessory.buildSerialNumber(userId, locationId, device.id) ===
+                WarmupTemperatureSensorAccessory.buildSerialNumber(
+                  existingAccessory.context.userId,
+                  existingAccessory.context.locationId,
+                  existingAccessory.context.device.id
+                )
           )
         ) {
           // the accessory no longer exists
@@ -171,6 +138,50 @@ export class WarmupHomebridgePlatform {
           this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [existingAccessory]);
         }
       });
+    }
+  };
+
+  /**
+   *
+   * @param {{ userId: number, locationId: number, device: any, Type: typeof WarmupThermostatAccessory | typeof WarmupTemperatureSensorAccessory }} param0
+   */
+  updateOrRegisterDevice = ({ userId, locationId, device, Type }) => {
+    const deviceSN = Type.buildSerialNumber(userId, locationId, device.id);
+    const uuid = this.api.hap.uuid.generate(deviceSN);
+
+    this.log.debug(`Processing device ${device.roomName} with serial number ${deviceSN}.`);
+
+    // see if an accessory with the same uuid has already been registered and restored from
+    // the cached devices we stored in the `configureAccessory` method above
+    const existingAccessory = this.accessories.find((accessory) => accessory.UUID === uuid);
+
+    if (existingAccessory) {
+      // the accessory already exists
+      this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
+
+      existingAccessory.context = { userId, locationId, deviceType: Type.TYPE, device };
+      this.api.updatePlatformAccessories([existingAccessory]);
+
+      // create the accessory handler for the restored accessory
+      // this is imported from `platformAccessory.ts`
+      new Type(this, existingAccessory);
+    } else {
+      // the accessory does not yet exist, so we need to create it
+      this.log.info('Adding new accessory:', `${device.roomName} (Air)`);
+
+      // create a new accessory
+      const accessory = new this.api.platformAccessory(device.roomName, uuid, this.api.hap.Categories.THERMOSTAT);
+
+      // store a copy of the device object in the `accessory.context`
+      // the `context` property can be used to store any data about the accessory you may need
+      accessory.context = { userId, locationId, deviceType: Type.TYPE, device };
+
+      // create the accessory handler for the newly create accessory
+      // this is imported from `platformAccessory.ts`
+      new Type(this, accessory);
+
+      // link the accessory to your platform
+      this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [accessory]);
     }
   };
 }
