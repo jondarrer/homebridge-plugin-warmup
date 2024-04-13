@@ -15,31 +15,68 @@ beforeEach(() => {
   jest.restoreAllMocks();
 });
 
-it('should return the login token when given valid credentials', async () => {
-  // Arrange
-  const email = 'email@address';
-  const password = 'password-123';
-  jest.spyOn(server.warmupService, 'login').mockResolvedValue();
-  server.warmupService.token = 'valid-token';
+describe('/token', () => {
+  it('should return the login token when given valid credentials', async () => {
+    // Arrange
+    const email = 'email@address';
+    const password = 'password-123';
+    jest.spyOn(server.warmupService, 'login').mockResolvedValue();
+    server.warmupService.token = 'valid-token';
 
-  // Act
-  const { token } = await server.handlers['/token']({ email, password });
+    // Act
+    const { token } = await server.handlers['/token']({ email, password });
 
-  // Assert
-  jest.runAllTimers();
-  expect(server.warmupService.login).toHaveBeenCalledWith(email, password);
-  expect(token).toBe('valid-token');
+    // Assert
+    jest.runAllTimers();
+    expect(server.warmupService.login).toHaveBeenCalledWith(email, password);
+    expect(token).toBe('valid-token');
+  });
+
+  it('should throw an error when login fails', async () => {
+    // Arrange
+    const email = 'email@address';
+    const password = 'password-123';
+    jest.spyOn(server.warmupService, 'login').mockRejectedValue(new Error('An error occurred'));
+
+    // Act & Assert
+    jest.runAllTimers();
+    await expect(async () => await server.handlers['/token']({ email, password })).rejects.toThrow(
+      new RequestError('Failed to get token', { message: 'An error occurred' })
+    );
+  });
 });
 
-it('should throw an error when login fails', async () => {
-  // Arrange
-  const email = 'email@address';
-  const password = 'password-123';
-  jest.spyOn(server.warmupService, 'login').mockRejectedValue(new Error('An error occurred'));
+describe('/user-profile', () => {
+  it('should return the login token when given valid credentials', async () => {
+    // Arrange
+    const token = 'valid-token';
+    const email = 'email@address';
+    const firstName = 'Joe';
+    const lastName = 'Bloggs';
+    jest
+      .spyOn(server.warmupService, 'getUserProfile')
+      .mockResolvedValue({ user: { userProfile: { email, firstName, lastName } } });
+    server.warmupService.token = 'valid-token';
 
-  // Act & Assert
-  jest.runAllTimers();
-  await expect(async () => await server.handlers['/token']({ email, password })).rejects.toThrow(
-    new RequestError('Failed to get token', { message: 'An error occurred' })
-  );
+    // Act
+    const { user } = await server.handlers['/user-profile']({ token });
+
+    // Assert
+    jest.runAllTimers();
+    expect(server.warmupService.getUserProfile).toHaveBeenCalled();
+    expect(user).toEqual({ userProfile: { email, firstName, lastName } });
+  });
+
+  it('should throw an error when login fails', async () => {
+    // Arrange
+    const email = 'email@address';
+    const password = 'password-123';
+    jest.spyOn(server.warmupService, 'login').mockRejectedValue(new Error('An error occurred'));
+
+    // Act & Assert
+    jest.runAllTimers();
+    await expect(async () => await server.handlers['/token']({ email, password })).rejects.toThrow(
+      new RequestError('Failed to get token', { message: 'An error occurred' })
+    );
+  });
 });

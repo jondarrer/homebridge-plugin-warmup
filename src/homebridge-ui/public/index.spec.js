@@ -364,6 +364,33 @@ describe('Logged in', () => {
     expect(glob.homebridge.toast.success).toHaveBeenCalledWith('Logged out', 'Success');
   });
 
+  it('should show login information', async () => {
+    // Arrange
+    const token = 'valid-token';
+    const email = 'email@address';
+    const firstName = 'Joe';
+    const lastName = 'Bloggs';
+    const pluginConfig = [{ token }];
+    jest.spyOn(pluginConfig, 'push');
+    glob.homebridge.getPluginConfig.mockResolvedValue(pluginConfig);
+    const page = readFileSync(join(__dirname, './index.html'), { encoding: 'utf-8' });
+    glob.homebridge.request.mockImplementationOnce(() =>
+      Promise.resolve({ data: { user: { userProfile: { email, firstName, lastName } } } })
+    );
+
+    // Act
+    dom = new jsdom.JSDOM(page, {
+      runScripts: 'dangerously',
+      beforeParse(window) {
+        window.homebridge = glob.homebridge;
+      },
+    });
+    await wait();
+
+    // Assert
+    expect(dom.window.document.getElementById('userProfile').innerHTML).toBe(`${firstName} ${lastName} (${email})`);
+  });
+
   it('should handle the error thrown by updatePluginConfig', async () => {
     // Arrange
     const pluginConfig = [{ token: 'a token' }];

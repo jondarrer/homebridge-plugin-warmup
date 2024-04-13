@@ -49,10 +49,19 @@
   </form>
   <form id="logoutForm" class="d-none">
     <div class="form-group">
-      <!-- https://icons.getbootstrap.com/icons/lock-fill/ -->
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lock-fill" viewBox="0 0 16 16">
-        <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2m3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2"/>
-      </svg> <span>You're currently logged in.</span> <span id="saveHint" class="d-none">You must click Save to complete the process. Then restart Homebridge to activate the plugin.</span>
+      <div id="loginInfoLoadingIndicator" class="spinner-border spinner-border-sm" role="status">
+        <!--<span class="visually-hidden">Loading...</span>-->
+      </div>
+      <div id="loginInfo" class="d-none">
+        <!-- https://icons.getbootstrap.com/icons/lock-fill/ -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lock-fill" viewBox="0 0 16 16">
+          <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2m3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2"/>
+        </svg>
+        <span>You're currently logged in as</span>
+        <span id="userProfile"></span>
+        
+        <p id="saveHint" class="d-none">You must click Save to complete the process. Then restart Homebridge to activate the plugin.</p>
+      </div>
     </div>
     <div class="text-center">
       <button id="logoutButton" type="button" class="btn btn-primary">Logout</button>
@@ -73,12 +82,12 @@
  * @param {HomebridgePluginUi} homebridge
  */
 const configUI = async (document, homebridge) => {
-  console.debug('configUI');
+  console.log('configUI');
 
   // get the initial config - this is an array potentially containing multiple config blocks
   const pluginConfig = await homebridge.getPluginConfig();
 
-  initialiseForm(pluginConfig);
+  initialiseForm(document, homebridge, pluginConfig);
 
   // watch for click events on the loginButton
   document
@@ -91,11 +100,19 @@ const configUI = async (document, homebridge) => {
     .addEventListener('click', () => handleLogoutClick(document, homebridge, pluginConfig));
 };
 
-const initialiseForm = (pluginConfig) => {
-  console.debug('initialiseForm', pluginConfig);
+/**
+ *
+ * @param {window.Document} document
+ * @param {HomebridgePluginUi} homebridge
+ * @param {Array<any>} pluginConfig
+ */
+const initialiseForm = (document, homebridge, pluginConfig) => {
+  console.log('initialiseForm', pluginConfig);
   // determine which form to show, either login or logout
   if (pluginConfig.length && pluginConfig[0].token) {
-    console.debug('initialiseForm', 'Found token, showing logout form');
+    console.log('initialiseForm', 'Found token, showing logout form');
+
+    getUserProfile(document, homebridge, pluginConfig);
 
     if (document.getElementById('logoutForm').classList.contains('d-none')) {
       document.getElementById('logoutForm').classList.remove('d-none');
@@ -104,7 +121,7 @@ const initialiseForm = (pluginConfig) => {
       document.getElementById('loginForm').classList.add('d-none');
     }
   } else {
-    console.debug('initialiseForm', 'No token found, showing login form');
+    console.log('initialiseForm', 'No token found, showing login form');
     if (pluginConfig.length === 0) {
       pluginConfig.push({ name: 'Warmup' });
     }
@@ -118,6 +135,12 @@ const initialiseForm = (pluginConfig) => {
   }
 };
 
+/**
+ *
+ * @param {window.Document} document
+ * @param {HomebridgePluginUi} homebridge
+ * @param {Array<any>} pluginConfig
+ */
 const handleLoginClick = async (document, homebridge, pluginConfig) => {
   // validate a username was provided
   const email = document.getElementById('email').value;
@@ -144,7 +167,7 @@ const handleLoginClick = async (document, homebridge, pluginConfig) => {
       email,
       password,
     });
-    console.debug({response});
+    console.log({response});
 
     if (!response) {
       throw new Error('No response');
@@ -179,6 +202,12 @@ const handleLoginClick = async (document, homebridge, pluginConfig) => {
   }
 };
 
+/**
+ *
+ * @param {window.Document} document
+ * @param {HomebridgePluginUi} homebridge
+ * @param {Array<any>} pluginConfig
+ */
 const handleLogoutClick = async (document, homebridge, pluginConfig) => {
   // starting the request, show the loading spinner
   homebridge.showSpinner();
@@ -207,6 +236,29 @@ const handleLogoutClick = async (document, homebridge, pluginConfig) => {
   }
 };
 
+/**
+ * Gets the logged in user's profile from Warmup
+ * @param {window.Document} document
+ * @param {HomebridgePluginUi} homebridge
+ * @param {Array<any>} pluginConfig
+ */
+const getUserProfile = async (document, homebridge, pluginConfig) => {
+  console.log('getUserProfile', 'Getting user profile');
+
+  try {
+    const response = await homebridge.request('/user-profile', {token: pluginConfig[0].token});
+    console.log('getUserProfile', {response});
+    if (response.data.user) {
+      const { userProfile: { firstName, lastName, email }} = response.data.user;
+      document.getElementById('userProfile').innerHTML = `${firstName} ${lastName} (${email})`;
+      document.getElementById('loginInfoLoadingIndicator').classList.add('d-none');
+      document.getElementById('loginInfo').classList.remove('d-none');
+    }
+  } catch(e) {
+    console.error(e);
+    homebridge.toast.error(e.error, e.message);
+  }
+}
 (async () => {
 
 // Check for CommonJS environment (like Node.js)

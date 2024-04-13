@@ -9,6 +9,9 @@ const __dirname = dirname(__filename);
  */
 const gqlQueries = () => {
   // Query based on https://learning.atheros.ai/blog/graphql-introspection-and-introspection-queries
+  const getUserProfileQuery = readFileSync(join(__dirname, 'get-user-profile-query.graphql'), {
+    encoding: 'utf-8',
+  });
   const getDevicesQuery = readFileSync(join(__dirname, 'get-devices-query.graphql'), {
     encoding: 'utf-8',
   });
@@ -29,6 +32,7 @@ const gqlQueries = () => {
   });
 
   return {
+    getUserProfileQuery,
     getDevicesQuery,
     getDeviceQuery,
     deviceOffMutation,
@@ -40,6 +44,7 @@ const gqlQueries = () => {
 
 const queries = gqlQueries();
 
+export const getUserProfileQuery = queries.getUserProfileQuery;
 export const getDevicesQuery = queries.getDevicesQuery;
 export const getDeviceQuery = queries.getDeviceQuery;
 export const deviceOffMutation = queries.deviceOffMutation;

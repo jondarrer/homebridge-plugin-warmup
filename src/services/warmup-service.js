@@ -5,6 +5,7 @@ import assert from 'assert';
 import { getToken, makeGQLQuery } from 'warmup-api';
 
 import {
+  getUserProfileQuery,
   getDevicesQuery,
   getDeviceQuery,
   deviceOverrideMutation,
@@ -54,6 +55,23 @@ export class WarmupService {
   }
 
   /**
+   * Logged in user info
+   * @returns {Promise<any>}
+   */
+  async getUserProfile() {
+    assert(this.token, 'Login before getting logged in user profile');
+    const query = {
+      operationName: 'getUserProfile',
+      query: getUserProfileQuery,
+      variables: null,
+    };
+
+    this.log.debug(`Querying GQL endpoint with ${JSON.stringify(query)}`);
+
+    return await makeGQLQuery(query, this.token);
+  }
+
+  /**
    * Gets a list of devices belonging to the user
    * @returns {Promise<any>}
    */
@@ -67,8 +85,7 @@ export class WarmupService {
 
     this.log.debug(`Querying GQL endpoint with ${JSON.stringify(query)}`);
 
-    const result = await makeGQLQuery(query, this.token);
-    return result;
+    return await makeGQLQuery(query, this.token);
   }
 
   /**
