@@ -388,7 +388,7 @@ describe('Logged in', () => {
     await wait();
 
     // Assert
-    expect(dom.window.document.getElementById('userProfile').innerHTML).toBe(`${firstName} ${lastName} (${email})`);
+    expect(dom.window.document.getElementById('userProfile').innerHTML).toBe(`${firstName} ${lastName}, ${email}`);
   });
 
   it('should handle the error thrown by updatePluginConfig', async () => {

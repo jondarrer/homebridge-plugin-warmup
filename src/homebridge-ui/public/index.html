@@ -50,12 +50,11 @@
   <form id="logoutForm" class="d-none">
     <div class="form-group">
       <div id="loginInfoLoadingIndicator" class="spinner-border spinner-border-sm" role="status">
-        <!--<span class="visually-hidden">Loading...</span>-->
       </div>
       <div id="loginInfo" class="d-none">
         <!-- https://icons.getbootstrap.com/icons/lock-fill/ -->
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lock-fill" viewBox="0 0 16 16">
-          <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2m3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2"/>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-fill-lock" viewBox="0 0 16 16">
+          <path d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0m-9 8c0 1 1 1 1 1h5v-1a2 2 0 0 1 .01-.2 4.49 4.49 0 0 1 1.534-3.693Q8.844 9.002 8 9c-5 0-6 3-6 4m7 0a1 1 0 0 1 1-1v-1a2 2 0 1 1 4 0v1a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1zm3-3a1 1 0 0 0-1 1v1h2v-1a1 1 0 0 0-1-1"/>
         </svg>
         <span>You're currently logged in as</span>
         <span id="userProfile"></span>
@@ -64,7 +63,12 @@
       </div>
     </div>
     <div class="text-center">
-      <button id="logoutButton" type="button" class="btn btn-primary">Logout</button>
+      <button id="logoutButton" type="button" class="btn btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-unlock" viewBox="0 0 16 16">
+          <path d="M11 1a2 2 0 0 0-2 2v4a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h5V3a3 3 0 0 1 6 0v4a.5.5 0 0 1-1 0V3a2 2 0 0 0-2-2M3 8a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1z"/>
+        </svg>
+        <span>Logout</span>
+      </button>
     </div>
   </form>
 </div>
@@ -72,6 +76,15 @@
   .custom-addon {
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
+  }
+
+  #loginInfo span,
+  #logoutButton span {
+    vertical-align: middle;
+  }
+
+  #userProfile {
+    font-weight: 700;
   }
 </style>
 
@@ -218,6 +231,7 @@ const handleLogoutClick = async (document, homebridge, pluginConfig) => {
     // update the plugin config with null
     pluginConfig[0].token = null;
     await homebridge.updatePluginConfig(pluginConfig);
+      document.getElementById('userProfile').innerHTML = '';
 
     if (document.getElementById('loginForm').classList.contains('d-none')) {
       document.getElementById('loginForm').classList.remove('d-none');
@@ -250,7 +264,7 @@ const getUserProfile = async (document, homebridge, pluginConfig) => {
     console.log('getUserProfile', {response});
     if (response.data.user) {
       const { userProfile: { firstName, lastName, email }} = response.data.user;
-      document.getElementById('userProfile').innerHTML = `${firstName} ${lastName} (${email})`;
+      document.getElementById('userProfile').innerHTML = `${firstName} ${lastName}, ${email}`;
       document.getElementById('loginInfoLoadingIndicator').classList.add('d-none');
       document.getElementById('loginInfo').classList.remove('d-none');
     }
