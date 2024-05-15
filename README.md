@@ -60,9 +60,9 @@ Use the plugin Config UI X to login to your account and all the thermostats you 
 
 ### Usage
 
-![Room with Thermostat](./documentation/images/home-app-room-with-thermostat.png)
-
-![Thermostat Main View](./documentation/images/home-app-thermostat-main-view.png)
+Room View with Thermostat | Thermostat Main View
+| :---------------------: | :-------------------: |
+![Room with Thermostat](./documentation/images/home-app-room-with-thermostat.png) | ![Thermostat Main View](./documentation/images/home-app-thermostat-main-view.png)
 
 ## Temperature Control
 
