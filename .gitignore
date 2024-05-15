@@ -135,3 +135,6 @@ out
 .homebridge-dev/accessories
 .homebridge-dev/persist
 volumes/
+
+# macOS
+.DS_Store
