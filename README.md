@@ -22,6 +22,9 @@ Warmup Homebridge Plugin automatically discovers your Warmup thermostats.
 
 - [Using the plugin](#using-the-plugin)
   - [Installation](#installation)
+    - [Login to your Warmup account](#login-to-your-warmup-account)
+    - [Save your setup](#save-your-setup)
+  - [Usage](#usage)
 - [Temperature Control](#temperature-control)
 - [Mode Setting](#mode-setting)
 - [Developing](#developing)
@@ -39,17 +42,31 @@ You will also need a server running [Homebridge](https://homebridge.io).
 
 ### Installation
 
-Install the plugin by searching for "Warmup Homebridge Plugin" through the Homebridge Plugins UI or manually by:
+Install the plugin by searching for "Warmup Homebridge" through the Homebridge Plugins UI or manually by:
 
 ```sh
 sudo npm -g i homebridge-plugin-warmup
 ```
 
-Use the plugin Config UI X to login to your account and all the thermostats you own will be added to Homebridge.
+Use the plugin Config UI X to login to your account and all the thermostats you own will be added to Homebridge:
+
+#### Login to your Warmup account
+
+![Login to Warmup](./documentation/images/config-screen-login.png)
+
+#### Save your setup
+
+![Save Setup](./documentation/images/config-screen-details-with-save-hint.png)
+
+### Usage
+
+![Room with Thermostat](./documentation/images/home-app-room-with-thermostat.png)
+
+![Thermostat Main View](./documentation/images/home-app-thermostat-main-view.png)
 
 ## Temperature Control
 
-Changes to the temperature create a temperature override for the current setting.  Length of the override defaults to 60 Minutes ( or the duration setting).  
+Changes to the temperature create a "temperature override" for the current setting. The override lasts for 60 minutes.  
 
 ## Mode Setting
 
