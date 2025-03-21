@@ -157,8 +157,10 @@ const initialiseForm = (document, homebridge, pluginConfig) => {
  */
 const handleLoginClick = async (document, homebridge, pluginConfig) => {
   // validate a username was provided
+  console.log('handleLoginClick');
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
+  console.log('handleLoginClick', {email, password});
 
   if (!email) {
     // create a error / red toast notification if the required input is not provided.

@@ -12,12 +12,12 @@ src
 # prettier
 .prettierrc
 
-# Jest
-jest.config.js
-
 # Homebridge
 .homebridge-dev/
-volumes/
+
+# homebridge docker instance
+volumes/*
+!volumes/config.json
 
 # Husky
 .husky

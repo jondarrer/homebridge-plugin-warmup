@@ -1,0 +1,22 @@
+{
+  "platforms": [
+    {
+      "platform": "config",
+      "name": "Config",
+      "port": 8581
+    },
+    {
+      "platform": "HomebridgePluginWarmup",
+      "name": "Warmup",
+      "token": ""
+    }
+  ],
+  "bridge": {
+    "name": "Homebridge",
+    "username": "CC:22:3D:E3:CE:30",
+    "manufacturer": "homebridge.io",
+    "model": "homebridge",
+    "port": 51826,
+    "pin": "031-45-154"
+  }
+}

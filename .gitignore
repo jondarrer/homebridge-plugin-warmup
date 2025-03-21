@@ -134,7 +134,8 @@ out
 # homebridge container
 .homebridge-dev/accessories
 .homebridge-dev/persist
-volumes/
+volumes/*
+!volumes/config.json
 
 # macOS
 .DS_Store

@@ -1,23 +1,23 @@
 version: '3.8'
 
 volumes:
-  homebridge-data-main:
+  homebridge-data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: ./volumes/homebridge
+      device: ./volumes/homebridge-beta-2.0.0
 
 services:
   homebridge:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: homebridge-main-warmup
+      dockerfile: Dockerfile-beta-2.0.0
+    container_name: homebridge-beta-2.0.0-warmup
     # restart: unless-stopped
     network_mode: host
     volumes:
-      - homebridge-data-main:/homebridge
+      - homebridge-data:/homebridge
     environment:
       - TZ=Europe/London # Change to your timezone
       - HOMEBRIDGE_PORT=8581

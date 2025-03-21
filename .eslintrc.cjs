@@ -1,7 +1,6 @@
 module.exports = {
   env: {
     node: true,
-    jest: true,
   },
   overrides: [
     {
@@ -17,12 +16,8 @@ module.exports = {
         'max-lines': 'off',
         'no-useless-escape': 'off',
       },
-      env: {
-        jest: true,
-      },
     },
   ],
-  extends: ['plugin:jest/recommended'],
   parserOptions: {
     ecmaFeatures: {
       impliedStrict: true,
@@ -30,6 +25,5 @@ module.exports = {
     ecmaVersion: 13,
     sourceType: 'module',
   },
-  plugins: ['jest'],
   rules: {},
 };

@@ -85,7 +85,7 @@ Any temperature change will cause a 60 minute override at that temperature. Howe
 ```sh
 git clone git@github.com:jondarrer/homebridge-plugin-warmup
 cd homebridge-plugin-warmup
-npm install
+yarn
 ```
 
 ### Testing
@@ -93,7 +93,7 @@ npm install
 Run the tests with the usual command:
 
 ```sh
-npm test
+yarn test
 ```
 
 This will run the tests with a coverage report (requires 100% across the board to pass), which you can view with:
@@ -102,12 +102,12 @@ This will run the tests with a coverage report (requires 100% across the board t
 open coverage/lcov-report/index.html
 ```
 
-Debug within VS Code by running the `npm run local-homebridge` task.
+Debug within VS Code by running the `yarn local-homebridge` task.
 
 ### Building and publishing
 
 ```sh
-npm run build
+yarn build
 npm version patch -m "%s"
 git push && git push --tags
 ```
@@ -117,7 +117,7 @@ git push && git push --tags
 NB. Requires `docker-compose`.
 
 ```sh
-npm run containerised-homebridge
+yarn containerised-homebridge
 ```
 
 This will build the plugin and copy the necessary files to the appropriate places within container volume space (`./volumes/homebridge`). It will then start it, making it available at [http://localhost:8581](http://localhost:8581).

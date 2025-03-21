@@ -1,6 +1,7 @@
-import { jest } from '@jest/globals';
+import { describe, it, beforeEach, mock } from 'node:test';
+import assert from 'node:assert';
 
-import { HomebridgeMock, createLoggingMock } from './mocks';
+import { HomebridgeMock, createLoggingMock } from './mocks/index.js';
 
 import { PLUGIN_NAME, PLATFORM_NAME } from './settings.js';
 import { WarmupService } from './services/index.js';
@@ -47,38 +48,6 @@ const BATHROOM_ACCESSORY = {
   },
 };
 
-const KITCHEN_DEVICE = {
-  id: 123457,
-  type: '4ie',
-  roomName: 'Kitchen',
-  comfortTemp: 200,
-  currentTemp: 210,
-  mainTemp: 210,
-  mainLabel: 'floor',
-  secondaryTemp: 175,
-  secondaryLabel: 'air',
-  sleepTemp: 120,
-  overrideDur: 0,
-  overrideTemp: 200,
-  fixedTemp: 0,
-  awayTemp: 120,
-  targetTemp: 200,
-  runMode: 'schedule',
-  runModeInt: 1,
-  roomMode: 'program',
-  roomModeInt: 1,
-};
-
-const KITCHEN_ACCESSORY = {
-  UUID: `UUID:${USER_ID}-${LOCATION_ID}-${KITCHEN_DEVICE.id}`,
-  displayName: 'KITCHEN_ACCESSORY',
-  context: {
-    userId: USER_ID,
-    locationId: LOCATION_ID,
-    device: KITCHEN_DEVICE,
-  },
-};
-
 beforeEach(() => {
   log = createLoggingMock();
   config = {
@@ -87,15 +56,20 @@ beforeEach(() => {
   };
   api = new HomebridgeMock();
   platform = new WarmupHomebridgePlatform(log, config, api);
-  jest.restoreAllMocks();
+  mock.reset();
 });
 
 it('should initialise without throwing', () => {
   // Arrange
-  const accessory = api.platformAccessory(BATHROOM_ACCESSORY);
+  const accessory = {
+    ...BATHROOM_ACCESSORY,
+    getService: mock.fn((service) => service),
+  };
+  accessory.context.userId = USER_ID;
+  accessory.context.locationId = LOCATION_ID;
 
   // Act & Assert
-  expect(() => new WarmupTemperatureSensorAccessory(platform, accessory)).not.toThrow();
+  assert.doesNotThrow(() => new WarmupTemperatureSensorAccessory(platform, accessory));
 });
 
 describe('CurrentTemperature', () => {
@@ -103,35 +77,45 @@ describe('CurrentTemperature', () => {
     // Arrange
     const secondaryTemp = 100;
     const { CurrentTemperature } = platform.Characteristic;
-    const accessory = api.platformAccessory({
+    mock.method(CurrentTemperature, 'updateValue');
+    const accessory = {
       ...BATHROOM_ACCESSORY,
+      getService: mock.fn((service) => service),
       context: {
         userId: USER_ID,
         locationId: LOCATION_ID,
         device: { ...BATHROOM_DEVICE, secondaryTemp },
       },
-    });
+    };
 
     // Act
     new WarmupTemperatureSensorAccessory(platform, accessory);
 
     // Assert
-    expect(CurrentTemperature.updateValue).toHaveBeenCalledWith(secondaryTemp / 10);
+    assert.ok(CurrentTemperature.updateValue.mock.callCount() > 0);
+    assert.deepEqual(CurrentTemperature.updateValue.mock.calls[0].arguments, [secondaryTemp / 10]);
   });
+
   it('should get the current temperature', async () => {
     // Arrange
     const { CurrentTemperature } = platform.Characteristic;
+    mock.method(CurrentTemperature, 'onGet');
     const secondaryTemp = 215;
-    jest.spyOn(WarmupService.prototype, 'getDevice').mockResolvedValue({
-      data: { user: { owned: [{ room: { ...BATHROOM_DEVICE, secondaryTemp } }] } },
-    });
-    const accessory = api.platformAccessory(BATHROOM_ACCESSORY);
+    mock.method(WarmupService.prototype, 'getDevice', async () =>
+      Promise.resolve({
+        data: { user: { owned: [{ room: { ...BATHROOM_DEVICE, secondaryTemp } }] } },
+      })
+    );
+    const accessory = {
+      ...BATHROOM_ACCESSORY,
+      getService: mock.fn((service) => service),
+    };
     const sensor = new WarmupTemperatureSensorAccessory(platform, accessory);
 
     // Act
     const result = await sensor.service.getCharacteristic(CurrentTemperature).emit('get');
 
     // Assert
-    expect(result).toBe(secondaryTemp / 10);
+    assert.equal(result, secondaryTemp / 10);
   });
 });

@@ -55,8 +55,18 @@ export class WarmupService {
   }
 
   /**
+   * @typedef UserProfile
+   * @prop {object} user
+   * @prop {string} user.id
+   * @prop {object} user.userProfile
+   * @prop {string} user.userProfile.email
+   * @prop {string} user.userProfile.firstName
+   * @prop {string} user.userProfile.lastName
+   */
+
+  /**
    * Logged in user info
-   * @returns {Promise<any>}
+   * @returns {Promise<UserProfile>}
    */
   async getUserProfile() {
     assert(this.token, 'Login before getting logged in user profile');

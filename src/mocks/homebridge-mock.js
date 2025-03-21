@@ -1,7 +1,8 @@
-import { jest } from '@jest/globals';
+import { mock } from 'node:test';
 
 import { CharacteristicMock } from './characteristic-mock.js';
 import { ServiceMock } from './service-mock.js';
+import { PlatformAccessoryMock } from './platform-accessory-mock.js';
 
 export class HomebridgeMock {
   set;
@@ -20,16 +21,13 @@ export class HomebridgeMock {
   on = (eventName, fn) => (this[eventName] = fn);
   emit = (eventName, args) => this[eventName](args);
 
-  platformAccessory = jest.fn((accessory = { context: {} }) => ({
-    ...accessory,
-    getService: jest.fn((service) => service),
-  }));
+  platformAccessory = PlatformAccessoryMock;
 
-  registerPlatformAccessories = jest.fn();
+  registerPlatformAccessories = mock.fn();
 
-  unregisterPlatformAccessories = jest.fn();
+  unregisterPlatformAccessories = mock.fn();
 
-  updatePlatformAccessories = jest.fn();
+  updatePlatformAccessories = mock.fn();
 
   hap = {
     Characteristic: CharacteristicMock,
@@ -38,7 +36,7 @@ export class HomebridgeMock {
       THERMOSTAT: 9,
     },
     uuid: {
-      generate: jest.fn().mockImplementation((uuid) => `UUID:${uuid}`),
+      generate: mock.fn((uuid) => `UUID:${uuid}`),
     },
     HAPStatus: {
       READ_ONLY_CHARACTERISTIC: 'READ_ONLY_CHARACTERISTIC',

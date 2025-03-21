@@ -42,9 +42,19 @@ class WarmupPluginUiServer extends HomebridgePluginUiServer {
   }
 
   /**
+   * @typedef UserProfile
+   * @prop {object} user
+   * @prop {string} user.id
+   * @prop {object} user.userProfile
+   * @prop {string} user.userProfile.email
+   * @prop {string} user.userProfile.firstName
+   * @prop {string} user.userProfile.lastName
+   */
+
+  /**
    *
    * @param {{token: string}} param
-   * @returns {Promise<{token: string}>}
+   * @returns {Promise<UserProfile>}
    */
   async getUserProfile({ token }) {
     try {
@@ -72,5 +82,7 @@ class WarmupPluginUiServer extends HomebridgePluginUiServer {
     return String(error);
   }
 }
+
+export { WarmupPluginUiServer };
 
 export default WarmupPluginUiServer;

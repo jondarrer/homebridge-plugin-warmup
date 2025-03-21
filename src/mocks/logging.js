@@ -1,8 +1,8 @@
-import { jest } from '@jest/globals';
+import { mock } from 'node:test';
 
 export default () => ({
-  error: jest.fn(),
-  warn: jest.fn(),
-  info: jest.fn(),
-  debug: jest.fn(),
+  error: mock.fn(),
+  warn: mock.fn(),
+  info: mock.fn(),
+  debug: mock.fn(),
 });

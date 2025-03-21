@@ -2,9 +2,9 @@
   "configurations": [
     {
       "type": "node-terminal",
-      "name": "npm run local-homebridge",
+      "name": "yarn local-homebridge",
       "request": "launch",
-      "command": "npm run local-homebridge",
+      "command": "yarn local-homebridge",
       "cwd": "${workspaceFolder}"
     }
   ]

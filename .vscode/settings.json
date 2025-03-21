@@ -15,6 +15,12 @@
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  "nodejs-testing.extensions": [
+    {
+      "extensions": ["mjs", "cjs", "js"],
+      "parameters": ["--disable-warning", "ExperimentalWarning", "--experimental-test-module-mocks"]
+    }
+  ],
   "cSpell.words": [
     "Authorisation",
     "initialise"

@@ -1,4 +1,4 @@
-import { jest } from '@jest/globals';
+import { mock } from 'node:test';
 
 export class CharacteristicMock {
   static Manufacturer = new CharacteristicMock('Manufacturer');
@@ -28,9 +28,9 @@ export class CharacteristicMock {
   on = (eventName, fn) => (this[eventName] = fn);
   emit = (eventName, args) => this[eventName](args);
 
-  setProps = jest.fn().mockImplementation(() => this);
+  setProps = mock.fn(() => this);
 
-  updateValue = jest.fn();
+  updateValue = mock.fn();
 
   constructor(name) {
     this.name = name;

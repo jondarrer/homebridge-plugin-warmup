@@ -1,4 +1,4 @@
-import { jest } from '@jest/globals';
+import { mock } from 'node:test';
 
 export class ServiceMock {
   static AccessoryInformation = new ServiceMock('AccessoryInformation');
@@ -9,6 +9,6 @@ export class ServiceMock {
     this.name = name;
   }
 
-  getCharacteristic = jest.fn((characteristic) => characteristic);
-  setCharacteristic = jest.fn(() => this);
+  getCharacteristic = mock.fn((characteristic) => characteristic);
+  setCharacteristic = mock.fn(() => this);
 }
