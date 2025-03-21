@@ -18,13 +18,13 @@
     "build": "rimraf ./dist && yarn copy-files",
     "containerised-homebridge": "yarn build && ./scripts/init.sh && docker-compose up --build",
     "containerised-homebridge-beta-2.0.0": "yarn build && ./scripts/init-beta-2.0.0.sh && docker-compose --file docker-compose-beta-2.0.0.yml up --build",
-    "copy-files": "copyfiles --exclude \"**/*.spec.js\" --exclude \"**/mocks/*\" -u 1 src/* src/**/* src/**/**/* dist/",
+    "copy-files": "copyfiles --exclude \"**/*.test.js\" --exclude \"**/mocks/*\" -u 1 src/* src/**/* src/**/**/* dist/",
     "lint": "eslint src/**.js --max-warnings=0",
     "lint-staged": "lint-staged",
     "local-homebridge": "npx homebridge -D -U ./.homebridge-dev",
     "prepare": "husky",
     "prepublishOnly": "yarn lint && yarn build",
-    "test": "node --test --disable-warning=ExperimentalWarning --experimental-test-module-mocks",
+    "test": "node --test --disable-warning=ExperimentalWarning --experimental-test-module-mocks \"src/**/*.test.js\"",
     "watch": "yarn build && yarn link && nodemon"
   },
   "dependencies": {
