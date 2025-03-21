@@ -1,7 +1,7 @@
 {
   "private": false,
   "name": "homebridge-plugin-warmup",
-  "version": "0.0.36",
+  "version": "1.0.0",
   "description": "Unofficial Homebridge plugin exposing Warmup smart thermostats to Apple's HomeKit",
   "license": "Apache-2.0",
   "repository": {
