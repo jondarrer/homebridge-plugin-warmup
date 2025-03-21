@@ -24,7 +24,7 @@
     "local-homebridge": "npx homebridge -D -U ./.homebridge-dev",
     "prepare": "husky",
     "prepublishOnly": "yarn lint && yarn build",
-    "test": "node --test --disable-warning=ExperimentalWarning --experimental-test-module-mocks \"src/**/*.test.js\"",
+    "test": "node --test --disable-warning=ExperimentalWarning --experimental-test-module-mocks",
     "watch": "yarn build && yarn link && nodemon"
   },
   "dependencies": {
@@ -52,7 +52,7 @@
   ],
   "engines": {
     "homebridge": "^1.9.0",
-    "node": "^18.19.0 || ^20.9.0 || ^22.14.0"
+    "node": "^18.19.0 || ^20.18.0 || ^22.14.0"
   },
   "displayName": "Warmup Homebridge Plugin",
   "lint-staged": {
