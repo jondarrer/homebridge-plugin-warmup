@@ -5,9 +5,9 @@ import { describe, it, afterEach, mock } from 'node:test';
 import assert from 'node:assert';
 
 class MockedHomebridgePluginUiServer {
-  handlers = {};
+  handlers: Record<string, Function> = {};
 
-  onRequest(path, fn) {
+  onRequest(path: string, fn: Function) {
     this.handlers[path] = fn;
   }
 
@@ -16,7 +16,7 @@ class MockedHomebridgePluginUiServer {
 
 class MockedRequestError extends Error {
   requestError;
-  constructor(message, requestError) {
+  constructor(message: string, requestError: Error | unknown) {
     super(message);
     Object.setPrototypeOf(this, MockedRequestError.prototype);
     this.requestError = requestError;
@@ -38,7 +38,7 @@ describe('/token', () => {
     });
     const { default: WarmupPluginUiServer } = await import('./warmup-plugin-ui-server.js');
     const server = new WarmupPluginUiServer();
-    t.mock.method(server.warmupService, 'login', async () => Promise.resolve());
+    const loginMock = t.mock.method(server.warmupService, 'login', async () => Promise.resolve());
     server.warmupService.token = 'valid-token';
 
     // Act
@@ -48,8 +48,8 @@ describe('/token', () => {
     // Assert
     t.mock.timers.enable({ apis: ['setInterval'] });
     t.mock.timers.tick(1);
-    assert.equal(server.warmupService.login.mock.callCount(), 1);
-    assert.deepEqual(server.warmupService.login.mock.calls[0].arguments, [email, password]);
+    assert.equal(loginMock.mock.callCount(), 1);
+    assert.deepEqual(loginMock.mock.calls[0].arguments, [email, password]);
     assert.equal(token, 'valid-token');
   });
 
@@ -87,19 +87,19 @@ describe('/user-profile', () => {
     });
     const { default: WarmupPluginUiServer } = await import('./warmup-plugin-ui-server.js');
     const server = new WarmupPluginUiServer();
-    t.mock.method(server.warmupService, 'getUserProfile', async () =>
-      Promise.resolve({ user: { userProfile: { email, firstName, lastName } } })
+    const getUserProfileMock = t.mock.method(server.warmupService, 'getUserProfile', async () =>
+      Promise.resolve({ data: { user: { userProfile: { email, firstName, lastName } } } })
     );
     server.warmupService.token = 'valid-token';
 
     // Act
     // const { user } = await server.handlers['/user-profile']({ token });
-    const { user } = await server.getUserProfile({ token });
+    const { data: { user } } = await server.getUserProfile({ token });
 
     // Assert
     t.mock.timers.enable({ apis: ['setInterval'] });
     t.mock.timers.tick(1);
-    assert.equal(server.warmupService.getUserProfile.mock.callCount(), 1);
+    assert.equal(getUserProfileMock.mock.callCount(), 1);
     assert.deepEqual(user, { userProfile: { email, firstName, lastName } });
   });
 

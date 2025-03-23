@@ -1,6 +1,6 @@
-import { mock } from 'node:test';
-
 export class CharacteristicMock {
+  __handlers: Record<string, Function> = {};
+  [x: string]: unknown;
   static Manufacturer = new CharacteristicMock('Manufacturer');
   static Model = new CharacteristicMock('Model');
   static SerialNumber = new CharacteristicMock('SerialNumber');
@@ -11,31 +11,28 @@ export class CharacteristicMock {
   static TargetTemperature = new CharacteristicMock('TargetTemperature');
   static TemperatureDisplayUnits = new CharacteristicMock('TemperatureDisplayUnits');
 
-  name;
-  value;
-  set;
-  get;
+  value: unknown = null;
+  set: Function = () => {};
+  get: Function = () => {};
 
-  onSet = (fn) => {
+  onSet = (fn: Function) => {
     this.set = fn;
+    this.on('set', fn);
     return this;
   };
-  onGet = (fn) => {
+  onGet = (fn: Function) => {
     this.get = fn;
+    this.on('get', fn);
     return this;
   };
 
-  on = (eventName, fn) => (this[eventName] = fn);
-  emit = (eventName, args) => this[eventName](args);
+  on = (eventName: string, fn: Function) => (this.__handlers[eventName] = fn);
+  emit = async (eventName: string, args?: unknown) => await this.__handlers[eventName](args);
 
-  setProps = mock.fn(() => this);
+  setProps: Function = () => this;
+  updateValue = (value: unknown) => this.value = value;
 
-  updateValue = mock.fn();
-
-  constructor(name) {
-    this.name = name;
-    this.value = null;
-  }
+  constructor(public name: string) {};
 }
 
 CharacteristicMock.CurrentHeatingCoolingState.OFF = 0;

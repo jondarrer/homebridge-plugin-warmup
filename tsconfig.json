@@ -1,8 +1,12 @@
 {
   "compilerOptions": {
     "sourceMap": true,
+    "lib": [
+      "ES2022"
+    ],
+    "moduleResolution": "node",
     "target": "ES2022",
-    "module": "CommonJS",
+    "module": "ES2022",
     "rootDir": "src",
     "outDir": "dist",
     "strict": true,
@@ -13,5 +17,5 @@
     "experimentalDecorators": true,
     "types": ["node"]
   },
-  "include": ["*.ts", "src"]
+  "include": ["src"]
 }

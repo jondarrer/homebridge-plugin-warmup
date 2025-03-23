@@ -2,7 +2,10 @@
 
 import assert from 'assert';
 
+import type { Logger } from 'homebridge';
 import { getToken, makeGQLQuery } from 'warmup-api';
+import type { HeatingMutation, HeatingQuery } from 'warmup-api/dist/src/types.js';
+import type { IMakeRequestGQLResponse } from 'warmup-api/dist/src/make-request.js';
 
 import {
   getUserProfileQuery,
@@ -14,28 +17,21 @@ import {
   deviceOffMutation,
 } from './graphql/index.js';
 
+export interface IDeviceOverrideParams { locationId: number, roomId: [number], temperature: number, minutes: number };
+export type TGetUserProfileResponse = IMakeRequestGQLResponse<Pick<HeatingQuery, 'user'>>;
+export type TGetDevicesResponse = IMakeRequestGQLResponse<Pick<HeatingQuery, 'user'>>;
+export type TGetDeviceResponse = IMakeRequestGQLResponse<Pick<HeatingQuery, 'user'>>;
+
 /**
  * Communicates with the Warmup API
  */
 export class WarmupService {
-  token;
-
-  /**
-   *
-   * @param {any} log
-   * @param {string} [token]
-   */
-  constructor(log, token) {
-    this.log = log;
-    this.token = token ?? undefined;
-  }
+  constructor(private log: Logger, public token?: string | undefined) {}
 
   /**
    * Logs into the service
-   * @param {string} email
-   * @param {string} password
    */
-  async login(email, password) {
+  async login(email: string, password: string) {
     this.token = await getToken(email, password);
   }
 
@@ -43,68 +39,71 @@ export class WarmupService {
    * Logs out of the service
    */
   logout() {
-    this.token = null;
+    this.token = undefined;
   }
 
   /**
    * Whether or not the service is logged in
-   * @returns {boolean}
    */
-  isLoggedIn() {
-    return this.token != null;
+  isLoggedIn(): boolean {
+    return this.token !== undefined;
   }
 
-  /**
-   * @typedef UserProfile
-   * @prop {object} user
-   * @prop {string} user.id
-   * @prop {object} user.userProfile
-   * @prop {string} user.userProfile.email
-   * @prop {string} user.userProfile.firstName
-   * @prop {string} user.userProfile.lastName
-   */
+//   // Existing type
+// type Tenant = {
+//   id:string;
+//   description:string;
+//   name:string;
+//   approvedUsers: Array<{
+//     id:string;
+//     alias:string;
+//   }>
+// }
+
+// // Pick it apart
+// type TenantManagePageQueryTenant = 
+// Pick<Tenant, 'id' | 'description' | 'name'> & {
+//   approvedUsers: Array<Pick<Tenant['approvedUsers'][0], 'id' | 'alias'>>
+// }
 
   /**
    * Logged in user info
-   * @returns {Promise<UserProfile>}
    */
-  async getUserProfile() {
+  async getUserProfile(): Promise<TGetUserProfileResponse> {
     assert(this.token, 'Login before getting logged in user profile');
     const query = {
       operationName: 'getUserProfile',
       query: getUserProfileQuery,
-      variables: null,
+      variables: undefined,
     };
 
     this.log.debug(`Querying GQL endpoint with ${JSON.stringify(query)}`);
 
-    return await makeGQLQuery(query, this.token);
+    return await makeGQLQuery<HeatingQuery>(query, this.token) as TGetUserProfileResponse;
   }
 
   /**
    * Gets a list of devices belonging to the user
-   * @returns {Promise<any>}
    */
-  async getDevices() {
+  async getDevices(): Promise<TGetDevicesResponse> {
     assert(this.token, 'Login before getting devices');
     const query = {
       operationName: 'getDevices',
       query: getDevicesQuery,
-      variables: null,
+      variables: undefined,
     };
 
     this.log.debug(`Querying GQL endpoint with ${JSON.stringify(query)}`);
 
-    return await makeGQLQuery(query, this.token);
+    return await makeGQLQuery<HeatingQuery>(query, this.token) as TGetDevicesResponse;
   }
 
   /**
    * Gets the device belonging to the user
-   * @param {number} locationId The room id of the device
-   * @param {number} roomId The room id of the device
-   * @returns {Promise<any>}
+   * @param locationId The room id of the device
+   * @param roomId The room id of the device
    */
-  async getDevice(locationId, roomId) {
+  async getDevice(locationId: number, roomId: number): Promise<TGetDeviceResponse> {
     assert(this.token, 'Login before getting a device');
     const query = {
       operationName: 'getDevice',
@@ -114,15 +113,10 @@ export class WarmupService {
 
     this.log.debug(`Querying GQL endpoint with ${JSON.stringify(query)}`);
 
-    return await makeGQLQuery(query, this.token);
+    return await makeGQLQuery<HeatingQuery>(query, this.token) as TGetDeviceResponse;
   }
 
-  /**
-   *
-   * @param {{locationId: number, roomId: [number], temperature: number, minutes: number}} params
-   * @returns {Promise<any>}
-   */
-  async deviceOverride({ locationId, roomId, temperature, minutes }) {
+  async deviceOverride({ locationId, roomId, temperature, minutes }: IDeviceOverrideParams): Promise<any> {
     assert(this.token, 'Login before overriding a device');
     const query = {
       operationName: 'deviceOverride',
@@ -132,15 +126,10 @@ export class WarmupService {
 
     this.log.debug(`Querying GQL endpoint with ${JSON.stringify(query)}`);
 
-    return await makeGQLQuery(query, this.token);
+    return await makeGQLQuery<HeatingMutation>(query, this.token);
   }
 
-  /**
-   *
-   * @param {{locationId: number, roomId: [number] }} params
-   * @returns {Promise<any>}
-   */
-  async deviceOverrideCancel({ locationId, roomId }) {
+  async deviceOverrideCancel({ locationId, roomId }: {locationId: number, roomId: [number] }): Promise<any> {
     assert(this.token, 'Login before cancelling an override for a device');
     const query = {
       operationName: 'deviceOverrideCancel',
@@ -150,15 +139,10 @@ export class WarmupService {
 
     this.log.debug(`Querying GQL endpoint with ${JSON.stringify(query)}`);
 
-    return await makeGQLQuery(query, this.token);
+    return await makeGQLQuery<HeatingQuery>(query, this.token);
   }
 
-  /**
-   *
-   * @param {{locationId: number, roomId: [number] }} params
-   * @returns {Promise<any>}
-   */
-  async deviceSchedule({ locationId, roomId }) {
+  async deviceSchedule({ locationId, roomId }: {locationId: number, roomId: [number] }): Promise<any> {
     assert(this.token, 'Login before scheduling a device');
     const query = {
       operationName: 'deviceSchedule',
@@ -168,15 +152,10 @@ export class WarmupService {
 
     this.log.debug(`Querying GQL endpoint with ${JSON.stringify(query)}`);
 
-    return await makeGQLQuery(query, this.token);
+    return await makeGQLQuery<HeatingMutation>(query, this.token);
   }
 
-  /**
-   *
-   * @param {{locationId: number, roomId: [number] }} params
-   * @returns {Promise<any>}
-   */
-  async deviceOff({ locationId, roomId }) {
+  async deviceOff({ locationId, roomId }: {locationId: number, roomId: [number] }): Promise<any> {
     assert(this.token, 'Login before turning off a device');
     const query = {
       operationName: 'deviceOff',
@@ -186,6 +165,6 @@ export class WarmupService {
 
     this.log.debug(`Querying GQL endpoint with ${JSON.stringify(query)}`);
 
-    return await makeGQLQuery(query, this.token);
+    return await makeGQLQuery<HeatingMutation>(query, this.token);
   }
 }

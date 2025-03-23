@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { FlatCompat } from '@eslint/eslintrc';
 import js from '@eslint/js';
 import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,6 +14,8 @@ const compat = new FlatCompat({
 });
 
 export default [
+  ...tseslint.configs.strict,
+  ...tseslint.configs.stylistic,
   {
     languageOptions: {
       globals: {
@@ -33,7 +36,7 @@ export default [
     rules: {},
   },
   {
-    files: ['**/*.spec.ts'],
+    files: ['**/*.test.ts'],
 
     rules: {
       'max-lines': 'off',

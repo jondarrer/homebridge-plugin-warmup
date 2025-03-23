@@ -40,6 +40,7 @@ COPY ./yarn.lock $HOMEBRIDGE_USER/node_modules/$PLUGIN_ID/
 COPY ./package.json $HOMEBRIDGE_USER/node_modules/$PLUGIN_ID/
 COPY ./dist/ $HOMEBRIDGE_USER/node_modules/$PLUGIN_ID/dist/
 COPY ./node_modules/ $HOMEBRIDGE_USER/node_modules/$PLUGIN_ID/node_modules/
+COPY ./.yarn/ $HOMEBRIDGE_USER/node_modules/$PLUGIN_ID/.yarn/
 
 COPY ./volumes/config.json $HOMEBRIDGE_USER/config.json
 

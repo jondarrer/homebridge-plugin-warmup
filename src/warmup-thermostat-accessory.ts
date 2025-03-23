@@ -1,4 +1,11 @@
+import assert from 'node:assert';
+
+import type { CharacteristicValue, PlatformAccessory, UnknownContext } from 'homebridge';
+import { Maybe, Room } from 'warmup-api/dist/src/types';
+
+
 import { RunMode } from './enums.js';
+import { type WarmupHomebridgePlatform } from './warmup-homebridge-platform.js';
 
 /**
  * Platform Accessory
@@ -6,14 +13,7 @@ import { RunMode } from './enums.js';
  * Each accessory may expose multiple services of different service types.
  */
 export class WarmupThermostatAccessory {
-  /**
-   *
-   * @param {number} userId
-   * @param {number} locationId
-   * @param {number} deviceId
-   * @returns {string}
-   */
-  static buildSerialNumber(userId, locationId, deviceId) {
+  static buildSerialNumber(userId: Maybe<number> | undefined, locationId: Maybe<number> | undefined, deviceId: Maybe<number> | undefined): string {
     return `${userId}-${locationId}-${deviceId}`;
   }
 
@@ -24,15 +24,7 @@ export class WarmupThermostatAccessory {
    */
   service;
 
-  /**
-   *
-   * @param {import('./warmup-homebridge-platform').WarmupHomebridgePlatform} platform
-   * @param {import('homebridge').PlatformAccessory} accessory
-   */
-  constructor(platform, accessory) {
-    this.platform = platform;
-    this.accessory = accessory;
-
+  constructor(private platform: WarmupHomebridgePlatform, private accessory: PlatformAccessory) {
     const {
       context: { userId, locationId, device },
     } = accessory;
@@ -54,7 +46,7 @@ export class WarmupThermostatAccessory {
     // set accessory information
     this.accessory
       .getService(this.platform.Service.AccessoryInformation)
-      .setCharacteristic(Manufacturer, 'Warmup')
+      ?.setCharacteristic(Manufacturer, 'Warmup')
       .setCharacteristic(Model, `${device.type} Smart WiFi Thermostat`)
       .setCharacteristic(SerialNumber, deviceSN);
 
@@ -123,16 +115,12 @@ export class WarmupThermostatAccessory {
       });
   }
 
-  /**
-   *
-   * @returns {Promise<import('homebridge').CharacteristicValue>}
-   */
-  async getCurrentHeatingCoolingState() {
+  async getCurrentHeatingCoolingState(): Promise<CharacteristicValue> {
     this.platform.log.debug(`[${this.accessory.context.device.roomName}] CurrentHeatingCoolingState begin reading`);
 
-    const {
-      device: { roomName, runModeInt },
-    } = await this.refreshDevice();
+    const context = (await this.refreshDevice());
+    const roomName = context?.device?.roomName;
+    const runModeInt = context?.device?.runModeInt;
 
     const { CurrentHeatingCoolingState } = this.platform.Characteristic;
     let result;
@@ -154,16 +142,12 @@ export class WarmupThermostatAccessory {
     return result;
   }
 
-  /**
-   *
-   * @returns {Promise<import('homebridge').CharacteristicValue>}
-   */
-  async getTargetHeatingCoolingState() {
+  async getTargetHeatingCoolingState(): Promise<CharacteristicValue> {
     this.platform.log.debug(`[${this.accessory.context.device.roomName}] TargetHeatingCoolingState begin reading`);
 
-    const {
-      device: { roomName, runModeInt },
-    } = await this.refreshDevice();
+    const context = (await this.refreshDevice());
+    const roomName = context?.device?.roomName;
+    const runModeInt = context?.device?.runModeInt;
 
     const { TargetHeatingCoolingState } = this.platform.Characteristic;
     let result;
@@ -187,11 +171,8 @@ export class WarmupThermostatAccessory {
     return result;
   }
 
-  /**
-   *
-   * @param {import('homebridge').CharacteristicValue} value
-   */
-  async setTargetHeatingCoolingState(value) {
+  async setTargetHeatingCoolingState(value: CharacteristicValue) {
+    assert.ok(this.platform.warmupService);
     const {
       context: {
         locationId,
@@ -230,12 +211,12 @@ export class WarmupThermostatAccessory {
         } else {
           // runMode === 'override' || runMode === 'schedule' || runMode === 'off'
 
-          const targetTemperature = /** @type {number} */ this.service.getCharacteristic(TargetTemperature).value;
+          const targetTemperature = this.service.getCharacteristic(TargetTemperature).value as number;
 
           await this.platform.warmupService.deviceOverride({
             locationId: locationId,
             roomId: id,
-            temperature: /** @type {any} */ (targetTemperature) * 10,
+            temperature: targetTemperature * 10,
             minutes: 60,
           });
 
@@ -252,9 +233,7 @@ export class WarmupThermostatAccessory {
       case TargetHeatingCoolingState.AUTO: // Auto
         await this.platform.warmupService.deviceOverrideCancel({ locationId, roomId: id });
 
-        const {
-          device: { targetTemp: newTargetTemp },
-        } = await this.refreshDevice();
+        const newTargetTemp = (await this.refreshDevice())?.device?.targetTemp as number;
 
         this.platform.log.debug(
           `[${roomName}] TargetHeatingCoolingState set to`,
@@ -273,11 +252,7 @@ export class WarmupThermostatAccessory {
     }
   }
 
-  /**
-   *
-   * @returns {Promise<import('homebridge').CharacteristicValue>}
-   */
-  async getTemperatureDisplayUnits() {
+  async getTemperatureDisplayUnits(): Promise<CharacteristicValue> {
     const {
       context: {
         device: { roomName },
@@ -293,11 +268,7 @@ export class WarmupThermostatAccessory {
     return TemperatureDisplayUnits.CELSIUS;
   }
 
-  /**
-   *
-   * @param {Promise<import('homebridge').CharacteristicValue>} value
-   */
-  async setTemperatureDisplayUnits(value) {
+  async setTemperatureDisplayUnits(value: CharacteristicValue) {
     const {
       context: {
         device: { roomName },
@@ -309,29 +280,27 @@ export class WarmupThermostatAccessory {
     throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.READ_ONLY_CHARACTERISTIC);
   }
 
-  /**
-   *
-   * @returns {Promise<import('homebridge').CharacteristicValue>}
-   */
-  async getTargetTemperature() {
+  async getTargetTemperature(): Promise<CharacteristicValue> {
     this.platform.log.debug(`[${this.accessory.context.device.roomName}] TargetTemperature begin reading`);
 
-    const {
-      device: { overrideTemp, roomName, runModeInt, targetTemp },
-    } = await this.refreshDevice();
+    const context = await this.refreshDevice();
+    const overrideTemp = context?.device?.overrideTemp;
+    const roomName = context?.device?.roomName;
+    const runModeInt = context?.device?.runModeInt;
+    const targetTemp = context?.device?.targetTemp;
 
     let result;
 
     switch (runModeInt) {
       case RunMode.OVERRIDE:
-        result = overrideTemp / 10;
+        result = (overrideTemp as number) / 10;
         break;
       // We'll get the target temperature for the device even though it's marked as off
       case RunMode.OFF:
       case RunMode.SCHEDULE:
       case RunMode.FIXED:
       default:
-        result = targetTemp / 10;
+        result = (targetTemp as number) / 10;
         break;
     }
 
@@ -340,11 +309,8 @@ export class WarmupThermostatAccessory {
     return result;
   }
 
-  /**
-   *
-   * @param {Promise<import('homebridge').CharacteristicValue>} value
-   */
-  async setTargetTemperature(value) {
+  async setTargetTemperature(value: CharacteristicValue) {
+    assert.ok(this.platform.warmupService);
     const {
       context: {
         locationId,
@@ -362,7 +328,7 @@ export class WarmupThermostatAccessory {
         await this.platform.warmupService.deviceOverride({
           locationId: locationId,
           roomId: id,
-          temperature: /** @type {any} */ (value) * 10,
+          temperature: (value as number) * 10,
           minutes: 60,
         });
 
@@ -393,27 +359,19 @@ export class WarmupThermostatAccessory {
     }
   }
 
-  /**
-   *
-   * @returns {Promise<import('homebridge').CharacteristicValue>}
-   */
-  async getCurrentTemperature() {
+  async getCurrentTemperature(): Promise<CharacteristicValue> {
     this.platform.log.debug(`[${this.accessory.context.device.roomName}] CurrentTemperature begin reading`);
 
-    const {
-      device: { currentTemp, roomName },
-    } = await this.refreshDevice();
+    const currentTemp = (await this.refreshDevice())?.device?.currentTemp || 0;
+    const roomName = (await this.refreshDevice())?.device?.roomName;
 
     this.platform.log.debug(`[${roomName}] CurrentTemperature read as`, currentTemp / 10);
 
     return currentTemp / 10;
   }
 
-  /**
-   *
-   * @returns {Promise<any>}
-   */
-  async refreshDevice() {
+  async refreshDevice(): Promise<UnknownContext & { device: Maybe<Room> | undefined }> {
+    assert.ok(this.platform.warmupService);
     const {
       context,
       context: {
@@ -425,18 +383,12 @@ export class WarmupThermostatAccessory {
 
     // Get the most up-to-date properties of the device
     const response = await this.platform.warmupService.getDevice(locationId, id);
-    const {
-      data: {
-        user: {
-          owned: [{ room: device }],
-        },
-      },
-    } = response;
+    const device = response?.data?.user?.owned?.[0]?.room;
 
     // Update the device with the latest values
     context.device = device;
     this.platform.log.debug(`[${device?.roomName}] Device refreshed with response: ${JSON.stringify(response)}`);
 
-    return context;
+    return context as UnknownContext & { device: Maybe<Room> | undefined };
   }
 }

@@ -1,17 +1,18 @@
-import { describe, it, beforeEach, mock } from 'node:test';
+import { describe, it, beforeEach, mock, afterEach } from 'node:test';
 import assert from 'node:assert';
 
-import { HomebridgeMock, createLoggingMock } from './mocks/index.js';
+import type { API, Logger, PlatformAccessory, UnknownContext } from 'homebridge';
 
+import { APIMock, createLoggingMock } from './mocks/index.js';
 import { PLUGIN_NAME, PLATFORM_NAME } from './settings.js';
 import { WarmupService } from './services/index.js';
 import { WarmupHomebridgePlatform } from './warmup-homebridge-platform.js';
 import { WarmupThermostatAccessory } from './warmup-thermostat-accessory.js';
 import { WarmupTemperatureSensorAccessory } from './warmup-temperature-sensor-accessory.js';
 
-let log;
-let config;
-let api;
+let log: Logger;
+let config: any;
+let api: API & APIMock;
 
 const USER_ID = 123;
 const LOCATION_ID = 123123;
@@ -82,6 +83,10 @@ const KITCHEN_DEVICE = {
   roomModeInt: 1,
 };
 
+type MockFunction<T extends (...args: any[]) => any> = T & { mock: { calls: Array<{arguments: Parameters<T>}>, callCount: () => number, restore: Function } };
+
+let mockRegisterPlatformAccessories: MockFunction<APIMock['registerPlatformAccessories']>;
+
 beforeEach(() => {
   log = createLoggingMock();
   config = {
@@ -89,8 +94,12 @@ beforeEach(() => {
     platform: PLATFORM_NAME,
     token: 'some-valid-token',
   };
-  api = new HomebridgeMock();
-  mock.reset();
+  api = new APIMock() as unknown as (API & APIMock);
+  mockRegisterPlatformAccessories = mock.method(api, 'registerPlatformAccessories') as unknown as MockFunction<APIMock['registerPlatformAccessories']>;
+});
+
+afterEach(() => {
+  mockRegisterPlatformAccessories.mock.restore();
 });
 
 describe('WarmupHomebridgePlatform', () => {
@@ -111,15 +120,17 @@ describe('WarmupHomebridgePlatform', () => {
     // Act
     await api.emit('didFinishLaunching');
 
+    console.log('HERE');
+
     // Assert
-    assert.equal(api.registerPlatformAccessories.mock.callCount(), 4);
+    assert.equal(mockRegisterPlatformAccessories.mock.callCount(), 4);
 
     // We have to split up the arguments for each call, as partialDeepStrictEqual
     // will fail when comparing a PlatformAccessory type object and a plain object,
     // as per https://nodejs.org/api/assert.html#comparison-details
-    assert.deepEqual(api.registerPlatformAccessories.mock.calls[0].arguments[0], PLUGIN_NAME);
-    assert.deepEqual(api.registerPlatformAccessories.mock.calls[0].arguments[1], PLATFORM_NAME);
-    assert.partialDeepStrictEqual(api.registerPlatformAccessories.mock.calls[0].arguments[2][0], {
+    assert.deepEqual(mockRegisterPlatformAccessories.mock.calls[0].arguments[0], PLUGIN_NAME);
+    assert.deepEqual(mockRegisterPlatformAccessories.mock.calls[0].arguments[1], PLATFORM_NAME);
+    assert.partialDeepStrictEqual(mockRegisterPlatformAccessories.mock.calls[0].arguments[2][0], {
       context: {
         userId: USER_ID,
         locationId: LOCATION_ID,
@@ -129,9 +140,9 @@ describe('WarmupHomebridgePlatform', () => {
         },
       },
     });
-    assert.deepEqual(api.registerPlatformAccessories.mock.calls[1].arguments[0], PLUGIN_NAME);
-    assert.deepEqual(api.registerPlatformAccessories.mock.calls[1].arguments[1], PLATFORM_NAME);
-    assert.partialDeepStrictEqual(api.registerPlatformAccessories.mock.calls[1].arguments[2][0], {
+    assert.deepEqual(mockRegisterPlatformAccessories.mock.calls[1].arguments[0], PLUGIN_NAME);
+    assert.deepEqual(mockRegisterPlatformAccessories.mock.calls[1].arguments[1], PLATFORM_NAME);
+    assert.partialDeepStrictEqual(mockRegisterPlatformAccessories.mock.calls[1].arguments[2][0], {
       context: {
         userId: USER_ID,
         locationId: LOCATION_ID,
@@ -141,9 +152,9 @@ describe('WarmupHomebridgePlatform', () => {
         },
       },
     });
-    assert.deepEqual(api.registerPlatformAccessories.mock.calls[2].arguments[0], PLUGIN_NAME);
-    assert.deepEqual(api.registerPlatformAccessories.mock.calls[2].arguments[1], PLATFORM_NAME);
-    assert.partialDeepStrictEqual(api.registerPlatformAccessories.mock.calls[2].arguments[2][0], {
+    assert.deepEqual(mockRegisterPlatformAccessories.mock.calls[2].arguments[0], PLUGIN_NAME);
+    assert.deepEqual(mockRegisterPlatformAccessories.mock.calls[2].arguments[1], PLATFORM_NAME);
+    assert.partialDeepStrictEqual(mockRegisterPlatformAccessories.mock.calls[2].arguments[2][0], {
       context: {
         userId: USER_ID,
         locationId: LOCATION_ID,
@@ -153,9 +164,9 @@ describe('WarmupHomebridgePlatform', () => {
         },
       },
     });
-    assert.deepEqual(api.registerPlatformAccessories.mock.calls[3].arguments[0], PLUGIN_NAME);
-    assert.deepEqual(api.registerPlatformAccessories.mock.calls[3].arguments[1], PLATFORM_NAME);
-    assert.partialDeepStrictEqual(api.registerPlatformAccessories.mock.calls[3].arguments[2][0], {
+    assert.deepEqual(mockRegisterPlatformAccessories.mock.calls[3].arguments[0], PLUGIN_NAME);
+    assert.deepEqual(mockRegisterPlatformAccessories.mock.calls[3].arguments[1], PLATFORM_NAME);
+    assert.partialDeepStrictEqual(mockRegisterPlatformAccessories.mock.calls[3].arguments[2][0], {
       context: {
         userId: USER_ID,
         locationId: LOCATION_ID,
@@ -176,14 +187,14 @@ describe('WarmupHomebridgePlatform', () => {
     const accessory = {
       ...BATHROOM_ACCESSORY,
       getService: mock.fn((service) => service),
-    };
+    }  as unknown as PlatformAccessory<UnknownContext>;
     accessory.context.userId = USER_ID;
     accessory.context.locationId = LOCATION_ID;
     plugin.configureAccessory(accessory);
     const accessoryAir = {
       ...BATHROOM_ACCESSORY_AIR,
       getService: mock.fn((service) => service),
-    };
+    } as unknown as PlatformAccessory<UnknownContext>;
     accessoryAir.context.userId = USER_ID;
     accessoryAir.context.locationId = LOCATION_ID;
     plugin.configureAccessory(accessoryAir);
@@ -192,14 +203,14 @@ describe('WarmupHomebridgePlatform', () => {
     await api.emit('didFinishLaunching');
 
     // Assert
-    assert.equal(api.registerPlatformAccessories.mock.callCount(), 2);
+    assert.equal(mockRegisterPlatformAccessories.mock.callCount(), 2);
 
     // We have to split up the arguments for each call, as partialDeepStrictEqual
     // will fail when comparing a PlatformAccessory type object and a plain object,
     // as per https://nodejs.org/api/assert.html#comparison-details
-    assert.deepEqual(api.registerPlatformAccessories.mock.calls[0].arguments[0], PLUGIN_NAME);
-    assert.deepEqual(api.registerPlatformAccessories.mock.calls[0].arguments[1], PLATFORM_NAME);
-    assert.partialDeepStrictEqual(api.registerPlatformAccessories.mock.calls[0].arguments[2][0], {
+    assert.deepEqual(mockRegisterPlatformAccessories.mock.calls[0].arguments[0], PLUGIN_NAME);
+    assert.deepEqual(mockRegisterPlatformAccessories.mock.calls[0].arguments[1], PLATFORM_NAME);
+    assert.partialDeepStrictEqual(mockRegisterPlatformAccessories.mock.calls[0].arguments[2][0], {
       context: {
         userId: USER_ID,
         locationId: LOCATION_ID,
@@ -209,9 +220,9 @@ describe('WarmupHomebridgePlatform', () => {
         },
       },
     });
-    assert.deepEqual(api.registerPlatformAccessories.mock.calls[1].arguments[0], PLUGIN_NAME);
-    assert.deepEqual(api.registerPlatformAccessories.mock.calls[1].arguments[1], PLATFORM_NAME);
-    assert.partialDeepStrictEqual(api.registerPlatformAccessories.mock.calls[1].arguments[2][0], {
+    assert.deepEqual(mockRegisterPlatformAccessories.mock.calls[1].arguments[0], PLUGIN_NAME);
+    assert.deepEqual(mockRegisterPlatformAccessories.mock.calls[1].arguments[1], PLATFORM_NAME);
+    assert.partialDeepStrictEqual(mockRegisterPlatformAccessories.mock.calls[1].arguments[2][0], {
       context: {
         userId: USER_ID,
         locationId: LOCATION_ID,
@@ -232,14 +243,14 @@ describe('WarmupHomebridgePlatform', () => {
     const accessory = {
       ...BATHROOM_ACCESSORY,
       getService: mock.fn((service) => service),
-    };
+    } as unknown as PlatformAccessory<UnknownContext>;
     accessory.context.userId = USER_ID;
     accessory.context.locationId = LOCATION_ID;
     plugin.configureAccessory(accessory);
     const accessoryAir = {
       ...BATHROOM_ACCESSORY_AIR,
       getService: mock.fn((service) => service),
-    };
+    } as unknown as PlatformAccessory<UnknownContext>;
     accessoryAir.context.userId = USER_ID;
     accessoryAir.context.locationId = LOCATION_ID;
     plugin.configureAccessory(accessoryAir);
@@ -248,14 +259,14 @@ describe('WarmupHomebridgePlatform', () => {
     await api.emit('didFinishLaunching');
 
     // Assert
-    assert.equal(api.registerPlatformAccessories.mock.callCount(), 2);
+    assert.equal(mockRegisterPlatformAccessories.mock.callCount(), 2);
 
     // We have to split up the arguments for each call, as partialDeepStrictEqual
     // will fail when comparing a PlatformAccessory type object and a plain object,
     // as per https://nodejs.org/api/assert.html#comparison-details
-    assert.deepEqual(api.registerPlatformAccessories.mock.calls[0].arguments[0], PLUGIN_NAME);
-    assert.deepEqual(api.registerPlatformAccessories.mock.calls[0].arguments[1], PLATFORM_NAME);
-    assert.partialDeepStrictEqual(api.registerPlatformAccessories.mock.calls[0].arguments[2][0], {
+    assert.deepEqual(mockRegisterPlatformAccessories.mock.calls[0].arguments[0], PLUGIN_NAME);
+    assert.deepEqual(mockRegisterPlatformAccessories.mock.calls[0].arguments[1], PLATFORM_NAME);
+    assert.partialDeepStrictEqual(mockRegisterPlatformAccessories.mock.calls[0].arguments[2][0], {
       context: {
         userId: USER_ID,
         locationId: LOCATION_ID,
@@ -265,9 +276,9 @@ describe('WarmupHomebridgePlatform', () => {
         },
       },
     });
-    assert.deepEqual(api.registerPlatformAccessories.mock.calls[1].arguments[0], PLUGIN_NAME);
-    assert.deepEqual(api.registerPlatformAccessories.mock.calls[1].arguments[1], PLATFORM_NAME);
-    assert.partialDeepStrictEqual(api.registerPlatformAccessories.mock.calls[1].arguments[2][0], {
+    assert.deepEqual(mockRegisterPlatformAccessories.mock.calls[1].arguments[0], PLUGIN_NAME);
+    assert.deepEqual(mockRegisterPlatformAccessories.mock.calls[1].arguments[1], PLATFORM_NAME);
+    assert.partialDeepStrictEqual(mockRegisterPlatformAccessories.mock.calls[1].arguments[2][0], {
       context: {
         userId: USER_ID,
         locationId: LOCATION_ID,

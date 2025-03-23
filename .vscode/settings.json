@@ -17,8 +17,8 @@
   },
   "nodejs-testing.extensions": [
     {
-      "extensions": ["mjs", "cjs", "js"],
-      "parameters": ["--disable-warning", "ExperimentalWarning", "--experimental-test-module-mocks"]
+      "extensions": ["ts"],
+      "parameters": ["--import", "tsx", "--disable-warning", "ExperimentalWarning", "--experimental-test-module-mocks"]
     }
   ],
   "cSpell.words": [

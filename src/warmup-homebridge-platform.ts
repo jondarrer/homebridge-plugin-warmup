@@ -1,3 +1,9 @@
+import assert from 'node:assert';
+
+import type { DynamicPlatformPlugin, Service, Characteristic, PlatformAccessory, PlatformConfig, API, Logger } from 'homebridge';
+
+import { User, Maybe } from 'warmup-api/dist/src/types.js';
+
 import { PLATFORM_NAME, PLUGIN_NAME } from './settings.js';
 import { WarmupThermostatAccessory } from './warmup-thermostat-accessory.js';
 import { WarmupTemperatureSensorAccessory } from './warmup-temperature-sensor-accessory.js';
@@ -8,48 +14,26 @@ import { WarmupService } from './services/index.js';
 // section
 /** @typedef {import('homebridge').DynamicPlatformPlugin} DynamicPlatformPlugin */
 
+interface IUpdateOrRegisterDevice { userId: Maybe<number> | undefined, locationId: Maybe<number> | undefined, device: any, Type: typeof WarmupThermostatAccessory | typeof WarmupTemperatureSensorAccessory };
+
 /**
- * HomebridgePlatform
- * This class is the main constructor for your plugin, this is where you should
- * parse the user config and discover/register accessories with Homebridge.
- * @implements {DynamicPlatformPlugin}
+ * This class is the main constructor for the plugin, parsing the user config and discovering/registering accessories with Homebridge.
  */
-export class WarmupHomebridgePlatform {
-  /**
-   * @type {WarmupService}
-   */
-  warmupService;
+export class WarmupHomebridgePlatform implements DynamicPlatformPlugin {
+  warmupService: WarmupService;
+  Service: typeof Service;
+  Characteristic: typeof Characteristic;
 
   /**
-   * @type {typeof import('homebridge').Service}
+   * This is used to track restored cached accessories
    */
-  Service;
+  accessories: PlatformAccessory[] = [];
 
-  /**
-   * @type {typeof import('homebridge').Characteristic}
-   */
-  Characteristic;
-
-  /**
-   * this is used to track restored cached accessories
-   * @type {import('homebridge').PlatformAccessory[]}
-   */
-  accessories = [];
-
-  /**
-   *
-   * @param {import('homebridge').Logger} log
-   * @param {import('homebridge').PlatformConfig} config
-   * @param {import('homebridge').API} api
-   */
-  constructor(log, config, api) {
-    this.log = log;
-    this.config = config;
-    this.api = api;
+  constructor(public log: Logger, private config: PlatformConfig, public api: API) {
     this.Service = this.api.hap.Service;
     this.Characteristic = this.api.hap.Characteristic;
+    this.warmupService = new WarmupService(log);
 
-    this.warmupService = new WarmupService(this.log, this.config.token);
     this.log.debug('Finished initializing platform:', this.config.name);
 
     // When this event is fired it means Homebridge has restored all cached accessories from disk.
@@ -60,6 +44,7 @@ export class WarmupHomebridgePlatform {
       this.log.debug('Executing didFinishLaunching callback');
 
       if (this.config.token) {
+        this.warmupService.token = this.config.token;
         await this.discoverDevices();
       } else {
         this.log.info(
@@ -72,9 +57,8 @@ export class WarmupHomebridgePlatform {
   /**
    * Invoked when homebridge restores cached accessories from disk at startup.
    * It should be used to setup event handlers for characteristics and update respective values.
-   * @param {import('homebridge').PlatformAccessory} accessory
    */
-  configureAccessory = (accessory) => {
+  configureAccessory = (accessory: PlatformAccessory) => {
     this.log.info('Loading accessory from cache:', accessory.displayName);
 
     // add the restored accessory to the accessories cache so we can track if it has already been registered
@@ -86,24 +70,25 @@ export class WarmupHomebridgePlatform {
    * Accessories must only be registered once, so previously created accessories
    * are not registered again to prevent "duplicate UUID" errors.
    */
-  discoverDevices = async () => {
+  discoverDevices = async (): Promise<void> => {
+    assert.ok(this.warmupService);
     const {
       data: {
         user,
         user: { id: userId },
       },
-    } = await this.warmupService.getDevices();
+    } = await this.warmupService.getDevices() as {data: { user: User }  };
 
     this.log.debug(`Discovered devices for user ${userId}.`);
 
     // Loop over the owned locations
-    for (const location of user.owned) {
-      const { id: locationId } = location;
+    for (const location of user?.owned || []) {
+      const locationId = location?.id;
 
       this.log.debug(`Processing devices for location ${locationId}.`);
 
       // loop over the discovered devices and register each one if it has not already been registered
-      for (const device of location.rooms) {
+      for (const device of location?.rooms || []) {
         this.updateOrRegisterDevice({ userId, locationId, device, Type: WarmupThermostatAccessory });
         this.updateOrRegisterDevice({ userId, locationId, device, Type: WarmupTemperatureSensorAccessory });
       }
@@ -112,18 +97,18 @@ export class WarmupHomebridgePlatform {
     // Unregister any accessories that we no longer have
     for (let i = 0; i < this.accessories.length; i++) {
       const existingAccessory = this.accessories[i];
-      user.owned.forEach((location) => {
-        const locationId = location.id;
+      user?.owned?.forEach((location) => {
+        const locationId = location?.id;
         if (
-          !location.rooms.find(
+          !location?.rooms?.find(
             (device) =>
-              WarmupThermostatAccessory.buildSerialNumber(userId, locationId, device.id) ===
+              WarmupThermostatAccessory.buildSerialNumber(userId, locationId, device?.id) ===
                 WarmupThermostatAccessory.buildSerialNumber(
                   existingAccessory.context.userId,
                   existingAccessory.context.locationId,
                   existingAccessory.context.device.id
                 ) ||
-              WarmupTemperatureSensorAccessory.buildSerialNumber(userId, locationId, device.id) ===
+              WarmupTemperatureSensorAccessory.buildSerialNumber(userId, locationId, device?.id) ===
                 WarmupTemperatureSensorAccessory.buildSerialNumber(
                   existingAccessory.context.userId,
                   existingAccessory.context.locationId,
@@ -141,11 +126,9 @@ export class WarmupHomebridgePlatform {
     }
   };
 
-  /**
-   *
-   * @param {{ userId: number, locationId: number, device: any, Type: typeof WarmupThermostatAccessory | typeof WarmupTemperatureSensorAccessory }} param0
-   */
-  updateOrRegisterDevice = ({ userId, locationId, device, Type }) => {
+  updateOrRegisterDevice = ({ userId, locationId, device, Type }: IUpdateOrRegisterDevice): void => {
+    assert.ok(userId, 'userId should be set to a value');
+    assert.ok(locationId, 'locationId should be set to a value');
     const deviceSN = Type.buildSerialNumber(userId, locationId, device.id);
     const uuid = this.api.hap.uuid.generate(deviceSN);
 

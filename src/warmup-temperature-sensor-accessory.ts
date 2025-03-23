@@ -1,37 +1,26 @@
+import { Maybe } from 'warmup-api/dist/src/types';
+
+import type { PlatformAccessory, Service } from "homebridge";
+
+import type { WarmupHomebridgePlatform } from "./warmup-homebridge-platform.js";
+
 /**
  * Represents the air temperature sensor on the thermostat
  */
 export class WarmupTemperatureSensorAccessory {
-  /**
-   *
-   * @param {number} userId
-   * @param {number} locationId
-   * @param {number} deviceId
-   * @returns {string}
-   */
-  static buildSerialNumber(userId, locationId, deviceId) {
+  static buildSerialNumber(userId: Maybe<number> | undefined, locationId: Maybe<number> | undefined, deviceId: Maybe<number> | undefined): string {
     return `${userId}-${locationId}-${deviceId}-air`;
   }
 
   static TYPE = 'Air Sensor';
 
-  /**
-   * @type {import('homebridge').Service}
-   */
-  service;
+  service: Service;
 
-  /**
-   *
-   * @param {import('./warmup-homebridge-platform').WarmupHomebridgePlatform} platform
-   * @param {import('homebridge').PlatformAccessory} accessory
-   */
-  constructor(platform, accessory) {
-    this.platform = platform;
-    this.accessory = accessory;
+  constructor(private platform: WarmupHomebridgePlatform, private accessory: PlatformAccessory) {
 
     const {
       context: { userId, locationId, device },
-    } = accessory;
+    } = this.accessory;
 
     const deviceSN = WarmupTemperatureSensorAccessory.buildSerialNumber(userId, locationId, device.id);
 
@@ -40,7 +29,7 @@ export class WarmupTemperatureSensorAccessory {
     // set accessory information
     this.accessory
       .getService(this.platform.Service.AccessoryInformation)
-      .setCharacteristic(Manufacturer, 'Warmup')
+      ?.setCharacteristic(Manufacturer, 'Warmup')
       .setCharacteristic(Model, `${device.type} Smart WiFi Temperature Sensor`)
       .setCharacteristic(SerialNumber, deviceSN);
 
@@ -71,9 +60,9 @@ export class WarmupTemperatureSensorAccessory {
   async getCurrentTemperature() {
     this.platform.log.debug(`[${this.accessory.context.device.roomName}-Air] CurrentTemperature begin reading`);
 
-    const {
-      device: { secondaryTemp, roomName },
-    } = await this.refreshDevice();
+    const context = (await this.refreshDevice());
+    const secondaryTemp = context?.device?.secondaryTemp;
+    const roomName = context?.device?.roomName;
 
     this.platform.log.debug(`[${roomName}-Air] CurrentTemperature read as`, secondaryTemp / 10);
 
@@ -95,14 +84,8 @@ export class WarmupTemperatureSensorAccessory {
     this.platform.log.debug(`[${roomName}-Air] Refreshing device ${id} with location ${locationId}.`);
 
     // Get the most up-to-date properties of the device
-    const response = await this.platform.warmupService.getDevice(locationId, id);
-    const {
-      data: {
-        user: {
-          owned: [{ room: device }],
-        },
-      },
-    } = response;
+    const response = await this.platform.warmupService?.getDevice(locationId, id);
+    const device = response?.data?.user?.owned?.[0]?.room ?? null;
 
     // Update the device with the latest values
     context.device = device;

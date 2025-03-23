@@ -1,9 +1,13 @@
 import { HomebridgePluginUiServer, RequestError } from '@homebridge/plugin-ui-utils';
 import { InvalidCredentialsError, AuthorisationError } from 'warmup-api';
+import { type Logger } from 'homebridge';
 
 import { WarmupService } from '../services/index.js';
+import { TGetUserProfileResponse } from '../services/warmup-service.js';
 
 class WarmupPluginUiServer extends HomebridgePluginUiServer {
+  warmupService: WarmupService;
+
   constructor() {
     // super() MUST be called first
     super();
@@ -14,18 +18,13 @@ class WarmupPluginUiServer extends HomebridgePluginUiServer {
     // Handle request for the /user-profile route
     this.onRequest('/user-profile', this.getUserProfile.bind(this));
 
-    this.warmupService = new WarmupService(console);
+    this.warmupService = new WarmupService(console as unknown as Logger);
 
     // This MUST be called when you are ready to accept requests
     this.ready();
   }
 
-  /**
-   *
-   * @param {{email: string, password: string}} param
-   * @returns {Promise<{token: string}>}
-   */
-  async generateToken({ email, password }) {
+  async generateToken({ email, password }: { email: string, password: string }): Promise<{token: string | undefined}> {
     try {
       // Get the token and return it to the ui
       await this.warmupService.login(email, password);
@@ -35,28 +34,13 @@ class WarmupPluginUiServer extends HomebridgePluginUiServer {
     } catch (e) {
       console.error(e);
       if (e instanceof InvalidCredentialsError) {
-        throw new RequestError('Invalid email/password combination');
+        throw new RequestError('Invalid email/password combination', this.getErrorMessage(e));
       }
       throw new RequestError('Failed to get token', this.getErrorMessage(e));
     }
   }
 
-  /**
-   * @typedef UserProfile
-   * @prop {object} user
-   * @prop {string} user.id
-   * @prop {object} user.userProfile
-   * @prop {string} user.userProfile.email
-   * @prop {string} user.userProfile.firstName
-   * @prop {string} user.userProfile.lastName
-   */
-
-  /**
-   *
-   * @param {{token: string}} param
-   * @returns {Promise<UserProfile>}
-   */
-  async getUserProfile({ token }) {
+  async getUserProfile({ token }: { token: string }): Promise<TGetUserProfileResponse> {
     try {
       // Get the token and return it to the ui
       this.warmupService.token = token;
@@ -70,12 +54,7 @@ class WarmupPluginUiServer extends HomebridgePluginUiServer {
     }
   }
 
-  /**
-   *
-   * @param {unknown} error
-   * @returns {string}
-   */
-  getErrorMessage(error) {
+  getErrorMessage(error: Error | unknown): string {
     if (error instanceof Error) {
       return error.message;
     }

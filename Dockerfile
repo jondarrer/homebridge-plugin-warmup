@@ -35,12 +35,11 @@ RUN mkdir -p $HOMEBRIDGE_USER/node_modules/$PLUGIN_ID/node_modules/
 RUN mkdir -p $HOMEBRIDGE_USER/node_modules/$PLUGIN_ID/.yarn/
 
 COPY ./config.schema.json $HOMEBRIDGE_USER/node_modules/$PLUGIN_ID/
-# COPY ./yarn.lock $HOMEBRIDGE_USER/node_modules/$PLUGIN_ID/
-COPY ./package-lock.json $HOMEBRIDGE_USER/node_modules/$PLUGIN_ID/
+COPY ./yarn.lock $HOMEBRIDGE_USER/node_modules/$PLUGIN_ID/
 COPY ./package.json $HOMEBRIDGE_USER/node_modules/$PLUGIN_ID/
 COPY ./dist/ $HOMEBRIDGE_USER/node_modules/$PLUGIN_ID/dist/
 COPY ./node_modules/ $HOMEBRIDGE_USER/node_modules/$PLUGIN_ID/node_modules/
-# COPY ./.yarn/ $HOMEBRIDGE_USER/node_modules/$PLUGIN_ID/.yarn/
+COPY ./.yarn/ $HOMEBRIDGE_USER/node_modules/$PLUGIN_ID/.yarn/
 
 COPY ./volumes/config.json $HOMEBRIDGE_USER/config.json
 

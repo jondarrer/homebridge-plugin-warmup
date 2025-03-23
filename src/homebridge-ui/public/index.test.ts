@@ -1,4 +1,4 @@
-import { describe, it, beforeEach, afterEach, mock } from 'node:test';
+import { describe, it, beforeEach, afterEach, mock, TestContext } from 'node:test';
 import assert from 'node:assert';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -6,18 +6,34 @@ import { fileURLToPath } from 'node:url';
 
 import jsdom from 'jsdom';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
-let dom;
-let pluginConfig;
-let page;
-let glob;
+let dom: jsdom.JSDOM;
+let pluginConfig: {
+  length: number,
+  0: unknown,
+  push: any,
+};
+let page: string;
+let glob: {
+  homebridge: {
+    getPluginConfig: any,
+    updatePluginConfig: any,
+    toast: {
+      error: any,
+      success: any,
+    },
+    showSpinner: any,
+    hideSpinner: any,
+    request: any,
+  },
+};
 
 // For debugging purposes, publish the page's console.log statement
 // Uncomment the following:
 // const virtualConsole = new jsdom.VirtualConsole();
 // virtualConsole.sendTo(console);
+// To undo the above, try
 // virtualConsole.removeAllListeners();
 
 beforeEach((t) => {
@@ -25,19 +41,19 @@ beforeEach((t) => {
   pluginConfig = {
     length: 0,
     0: {},
-    push: t.mock.fn(),
+    push: (t as TestContext).mock.fn(),
   };
   glob = {
     homebridge: {
-      getPluginConfig: t.mock.fn(),
-      updatePluginConfig: t.mock.fn(),
+      getPluginConfig: (t as TestContext).mock.fn(),
+      updatePluginConfig: (t as TestContext).mock.fn(),
       toast: {
-        error: t.mock.fn(),
-        success: t.mock.fn(),
+        error: (t as TestContext).mock.fn(),
+        success: (t as TestContext).mock.fn(),
       },
-      showSpinner: t.mock.fn(),
-      hideSpinner: t.mock.fn(),
-      request: t.mock.fn(),
+      showSpinner: (t as TestContext).mock.fn(),
+      hideSpinner: (t as TestContext).mock.fn(),
+      request: (t as TestContext).mock.fn(),
     },
   };
   glob.homebridge.getPluginConfig.mock.mockImplementation(() => Promise.resolve(pluginConfig));
@@ -79,7 +95,7 @@ describe('Logged out', () => {
     });
     await wait();
 
-    dom.window.document.getElementById('loginButton').click();
+    (dom.window.document.getElementById('loginButton') as HTMLButtonElement).click();
 
     // Assert
     assert.deepEqual(glob.homebridge.toast.error.mock.calls[0].arguments, ['Email must be provided.', 'Error']);
@@ -97,8 +113,8 @@ describe('Logged out', () => {
     });
     await wait();
 
-    dom.window.document.getElementById('email').value = 'some@email';
-    dom.window.document.getElementById('loginButton').click();
+    (dom.window.document.getElementById('email') as HTMLInputElement).value = 'some@email';
+    (dom.window.document.getElementById('loginButton') as HTMLButtonElement).click();
     await wait();
 
     // Assert
@@ -117,9 +133,9 @@ describe('Logged out', () => {
     });
     await wait();
 
-    dom.window.document.getElementById('email').value = 'some@email';
-    dom.window.document.getElementById('password').value = 'password-123';
-    dom.window.document.getElementById('loginButton').click();
+    (dom.window.document.getElementById('email') as HTMLInputElement).value = 'some@email';
+    (dom.window.document.getElementById('password') as HTMLInputElement).value = 'password-123';
+    (dom.window.document.getElementById('loginButton') as HTMLButtonElement).click();
     await wait();
 
     // Assert
@@ -138,9 +154,9 @@ describe('Logged out', () => {
     });
     await wait();
 
-    dom.window.document.getElementById('email').value = 'some@email';
-    dom.window.document.getElementById('password').value = 'password-123';
-    dom.window.document.getElementById('loginButton').click();
+    (dom.window.document.getElementById('email') as HTMLInputElement).value = 'some@email';
+    (dom.window.document.getElementById('password') as HTMLInputElement).value = 'password-123';
+    (dom.window.document.getElementById('loginButton') as HTMLButtonElement).click();
     await wait();
 
     // Assert
@@ -165,9 +181,9 @@ describe('Logged out', () => {
         token,
       })
     );
-    dom.window.document.getElementById('email').value = 'some@email';
-    dom.window.document.getElementById('password').value = 'password-123';
-    dom.window.document.getElementById('loginButton').click();
+    (dom.window.document.getElementById('email') as HTMLInputElement).value = 'some@email';
+    (dom.window.document.getElementById('password') as HTMLInputElement).value = 'password-123';
+    (dom.window.document.getElementById('loginButton') as HTMLButtonElement).click();
     await wait();
 
     // Assert
@@ -194,9 +210,9 @@ describe('Logged out', () => {
         error: 'some error',
       })
     );
-    dom.window.document.getElementById('email').value = 'some@email';
-    dom.window.document.getElementById('password').value = 'password-123';
-    dom.window.document.getElementById('loginButton').click();
+    (dom.window.document.getElementById('email') as HTMLInputElement).value = 'some@email';
+    (dom.window.document.getElementById('password') as HTMLInputElement).value = 'password-123';
+    (dom.window.document.getElementById('loginButton') as HTMLButtonElement).click();
     await wait();
 
     // Assert
@@ -217,9 +233,9 @@ describe('Logged out', () => {
     await wait();
 
     glob.homebridge.request.mock.mockImplementation(() => Promise.reject(new Error('Some error has occurred')));
-    dom.window.document.getElementById('email').value = 'some@email';
-    dom.window.document.getElementById('password').value = 'password-123';
-    dom.window.document.getElementById('loginButton').click();
+    (dom.window.document.getElementById('email') as HTMLInputElement).value = 'some@email';
+    (dom.window.document.getElementById('password') as HTMLInputElement).value = 'password-123';
+    (dom.window.document.getElementById('loginButton') as HTMLButtonElement).click();
     await wait();
 
     // Assert
@@ -248,9 +264,9 @@ describe('Logged out', () => {
         token,
       })
     );
-    dom.window.document.getElementById('email').value = 'some@email';
-    dom.window.document.getElementById('password').value = 'password-123';
-    dom.window.document.getElementById('loginButton').click();
+    (dom.window.document.getElementById('email') as HTMLInputElement).value = 'some@email';
+    (dom.window.document.getElementById('password') as HTMLInputElement).value = 'password-123';
+    (dom.window.document.getElementById('loginButton') as HTMLButtonElement).click();
     await wait();
 
     // Assert
@@ -278,8 +294,8 @@ describe('Logged in', () => {
 
     // Assert
     assert.equal(glob.homebridge.getPluginConfig.mock.callCount(), 1);
-    assert.ok(dom.window.document.getElementById('loginForm').classList.contains('d-none'));
-    assert.ok(!dom.window.document.getElementById('logoutForm').classList.contains('d-none'));
+    assert.ok((dom.window.document.getElementById('loginForm') as HTMLFormElement).classList.contains('d-none'));
+    assert.ok(!(dom.window.document.getElementById('logoutForm') as HTMLFormElement).classList.contains('d-none'));
   });
 
   it('should show the spinner', async () => {
@@ -296,9 +312,9 @@ describe('Logged in', () => {
     });
     await wait();
 
-    dom.window.document.getElementById('email').value = 'some@email';
-    dom.window.document.getElementById('password').value = 'password-123';
-    dom.window.document.getElementById('loginButton').click();
+    (dom.window.document.getElementById('email') as HTMLInputElement).value = 'some@email';
+    (dom.window.document.getElementById('password') as HTMLInputElement).value = 'password-123';
+    (dom.window.document.getElementById('loginButton') as HTMLButtonElement).click();
     await wait();
 
     // Assert
@@ -319,9 +335,9 @@ describe('Logged in', () => {
     });
     await wait();
 
-    dom.window.document.getElementById('email').value = 'some@email';
-    dom.window.document.getElementById('password').value = 'password-123';
-    dom.window.document.getElementById('loginButton').click();
+    (dom.window.document.getElementById('email') as HTMLInputElement).value = 'some@email';
+    (dom.window.document.getElementById('password') as HTMLInputElement).value = 'password-123';
+    (dom.window.document.getElementById('loginButton') as HTMLButtonElement).click();
     await wait();
 
     // Assert
@@ -359,7 +375,7 @@ describe('Logged in', () => {
     });
     await wait();
 
-    dom.window.document.getElementById('logoutButton').click();
+    (dom.window.document.getElementById('logoutButton') as HTMLFormElement).click();
     await wait();
 
     // Assert
@@ -391,7 +407,7 @@ describe('Logged in', () => {
     await wait();
 
     // Assert
-    assert.equal(dom.window.document.getElementById('userProfile').innerHTML, `${firstName} ${lastName}, ${email}`);
+    assert.equal((dom.window.document.getElementById('userProfile') as HTMLElement).innerHTML, `${firstName} ${lastName}, ${email}`);
   });
 
   it('should handle the error thrown by updatePluginConfig', async () => {
@@ -428,7 +444,7 @@ describe('Logged in', () => {
     });
     await wait();
 
-    dom.window.document.getElementById('logoutButton').click();
+    (dom.window.document.getElementById('logoutButton') as HTMLButtonElement).click();
     await wait();
 
     // Assert

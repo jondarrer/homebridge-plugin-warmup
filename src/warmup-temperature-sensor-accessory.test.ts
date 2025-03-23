@@ -1,17 +1,18 @@
 import { describe, it, beforeEach, mock } from 'node:test';
 import assert from 'node:assert';
 
-import { HomebridgeMock, createLoggingMock } from './mocks/index.js';
+import { API, Characteristic, Logger, PlatformAccessory } from 'homebridge';
 
+import { APIMock, CharacteristicMock, createLoggingMock } from './mocks/index.js';
 import { PLUGIN_NAME, PLATFORM_NAME } from './settings.js';
 import { WarmupService } from './services/index.js';
 import { WarmupHomebridgePlatform } from './warmup-homebridge-platform.js';
 import { WarmupTemperatureSensorAccessory } from './warmup-temperature-sensor-accessory.js';
 
-let log;
+let log: Logger;
 let config;
-let api;
-let platform;
+let api: API & APIMock;
+let platform: WarmupHomebridgePlatform;
 
 const USER_ID = 123;
 const LOCATION_ID = 123123;
@@ -53,9 +54,13 @@ beforeEach(() => {
   config = {
     name: PLUGIN_NAME,
     platform: PLATFORM_NAME,
+    token: 'valid-token',
   };
-  api = new HomebridgeMock();
+  api = new APIMock() as unknown as (API & APIMock);
   platform = new WarmupHomebridgePlatform(log, config, api);
+
+  // Simulate the platform having been launched
+  platform.warmupService = new WarmupService(log, config.token);
   mock.reset();
 });
 
@@ -64,7 +69,7 @@ it('should initialise without throwing', () => {
   const accessory = {
     ...BATHROOM_ACCESSORY,
     getService: mock.fn((service) => service),
-  };
+  } as unknown as PlatformAccessory;
   accessory.context.userId = USER_ID;
   accessory.context.locationId = LOCATION_ID;
 
@@ -77,7 +82,7 @@ describe('CurrentTemperature', () => {
     // Arrange
     const secondaryTemp = 100;
     const { CurrentTemperature } = platform.Characteristic;
-    mock.method(CurrentTemperature, 'updateValue');
+    const mockUpdateValue = mock.method(CurrentTemperature as unknown as Characteristic, 'updateValue');
     const accessory = {
       ...BATHROOM_ACCESSORY,
       getService: mock.fn((service) => service),
@@ -86,20 +91,20 @@ describe('CurrentTemperature', () => {
         locationId: LOCATION_ID,
         device: { ...BATHROOM_DEVICE, secondaryTemp },
       },
-    };
+    } as unknown as PlatformAccessory;
 
     // Act
     new WarmupTemperatureSensorAccessory(platform, accessory);
 
     // Assert
-    assert.ok(CurrentTemperature.updateValue.mock.callCount() > 0);
-    assert.deepEqual(CurrentTemperature.updateValue.mock.calls[0].arguments, [secondaryTemp / 10]);
+    assert.ok(mockUpdateValue.mock.callCount() > 0);
+    assert.deepEqual(mockUpdateValue.mock.calls[0].arguments, [secondaryTemp / 10]);
   });
 
   it('should get the current temperature', async () => {
     // Arrange
     const { CurrentTemperature } = platform.Characteristic;
-    mock.method(CurrentTemperature, 'onGet');
+    mock.method(CurrentTemperature as unknown as Characteristic, 'onGet');
     const secondaryTemp = 215;
     mock.method(WarmupService.prototype, 'getDevice', async () =>
       Promise.resolve({
@@ -109,11 +114,11 @@ describe('CurrentTemperature', () => {
     const accessory = {
       ...BATHROOM_ACCESSORY,
       getService: mock.fn((service) => service),
-    };
+    } as unknown as PlatformAccessory;
     const sensor = new WarmupTemperatureSensorAccessory(platform, accessory);
 
     // Act
-    const result = await sensor.service.getCharacteristic(CurrentTemperature).emit('get');
+    const result = await (sensor.service.getCharacteristic(CurrentTemperature) as unknown as CharacteristicMock).emit('get');
 
     // Assert
     assert.equal(result, secondaryTemp / 10);
