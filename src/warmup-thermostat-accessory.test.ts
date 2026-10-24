@@ -734,4 +734,25 @@ describe('CurrentTemperature', () => {
     // Assert
     assert.equal(result, currentTemp / 10);
   });
+  it('should get the current temperature when the room is not in the first location', async (t) => {
+    // Arrange
+    const { CurrentTemperature } = platform.Characteristic;
+    const currentTemp = 215;
+    t.mock.method(WarmupService.prototype, 'getDevice', async () =>
+      Promise.resolve({
+        data: { user: { owned: [{ room: null }, { room: { ...BATHROOM_DEVICE, currentTemp } }] } },
+      })
+    );
+    const accessory = {
+      ...BATHROOM_ACCESSORY,
+      getService: t.mock.fn((service) => service),
+    } as unknown as PlatformAccessory;
+    const thermostat = new WarmupThermostatAccessory(platform, accessory);
+
+    // Act
+    const result = await (thermostat.service.getCharacteristic(CurrentTemperature) as unknown as CharacteristicMock).emit('get');
+
+    // Assert
+    assert.equal(result, currentTemp / 10);
+  });
 });

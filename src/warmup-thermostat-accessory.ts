@@ -383,7 +383,7 @@ export class WarmupThermostatAccessory {
 
     // Get the most up-to-date properties of the device
     const response = await this.platform.warmupService.getDevice(locationId, id);
-    const device = response?.data?.user?.owned?.[0]?.room;
+    const device = response?.data?.user?.owned?.find((location) => location?.room)?.room;
 
     // Update the device with the latest values
     context.device = device;

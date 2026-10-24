@@ -123,4 +123,27 @@ describe('CurrentTemperature', () => {
     // Assert
     assert.equal(result, secondaryTemp / 10);
   });
+
+  it('should get the current temperature when the room is not in the first location', async () => {
+    // Arrange
+    const { CurrentTemperature } = platform.Characteristic;
+    mock.method(CurrentTemperature as unknown as Characteristic, 'onGet');
+    const secondaryTemp = 215;
+    mock.method(WarmupService.prototype, 'getDevice', async () =>
+      Promise.resolve({
+        data: { user: { owned: [{ room: null }, { room: { ...BATHROOM_DEVICE, secondaryTemp } }] } },
+      })
+    );
+    const accessory = {
+      ...BATHROOM_ACCESSORY,
+      getService: mock.fn((service) => service),
+    } as unknown as PlatformAccessory;
+    const sensor = new WarmupTemperatureSensorAccessory(platform, accessory);
+
+    // Act
+    const result = await (sensor.service.getCharacteristic(CurrentTemperature) as unknown as CharacteristicMock).emit('get');
+
+    // Assert
+    assert.equal(result, secondaryTemp / 10);
+  });
 });

@@ -85,7 +85,7 @@ export class WarmupTemperatureSensorAccessory {
 
     // Get the most up-to-date properties of the device
     const response = await this.platform.warmupService?.getDevice(locationId, id);
-    const device = response?.data?.user?.owned?.[0]?.room ?? null;
+    const device = response?.data?.user?.owned?.find((location) => location?.room)?.room ?? null;
 
     // Update the device with the latest values
     context.device = device;
